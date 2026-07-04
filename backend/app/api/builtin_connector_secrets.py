@@ -12,6 +12,12 @@ from ..db.repositories.builtin_connector_secrets_repo import (
     upsert_builtin_connector_secret,
 )
 from ..services.audit import log_custom
+from ..services.connector_sync import (
+    BuiltinConnectorSecretNotConfiguredError,
+    BuiltinConnectorSyncError,
+    GoogleCalendarSyncError,
+    sync_builtin_connector_secret,
+)
 
 router = APIRouter(prefix="/api/v1/ingestion/connectors/builtin", tags=["builtin-connector-secrets"])
 
@@ -94,6 +100,20 @@ def upsert_builtin_connector_secret_endpoint(
         metadata={"source_type": source_type, "poll_interval_seconds": payload.poll_interval_seconds},
     )
     return _public_view(row)
+
+
+@router.post("/{source_type}/sync")
+def sync_builtin_connector_secret_endpoint(
+    source_type: BuiltinSourceType,
+    tenant_id: str = Depends(resolve_tenant_id),
+    _: None = Depends(require_connector_sync_permission),
+) -> dict[str, Any]:
+    try:
+        return sync_builtin_connector_secret(tenant_id=tenant_id, source_type=source_type)
+    except BuiltinConnectorSecretNotConfiguredError as exc:
+        raise HTTPException(status_code=404, detail="No credentials configured for this source") from exc
+    except (BuiltinConnectorSyncError, GoogleCalendarSyncError) as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @router.get("/secrets")

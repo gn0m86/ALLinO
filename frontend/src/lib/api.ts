@@ -584,6 +584,29 @@ export async function fetchBuiltinConnectorSecrets(
   return response.json();
 }
 
+export async function syncBuiltinConnectorSecret(
+  sourceType: BuiltinConnectorSourceType,
+  signal?: AbortSignal,
+): Promise<{ processed: number; inserted: number; duplicates: number; rejected: number }> {
+  const url = new URL(
+    `/api/v1/ingestion/connectors/builtin/${encodeURIComponent(sourceType)}/sync`,
+    BACKEND_URL,
+  );
+
+  const response = await fetch(url.toString(), {
+    method: "POST",
+    cache: "no-store",
+    signal,
+    headers: baseHeaders(),
+  });
+
+  if (!response.ok) {
+    return parseErrorDetail(response, `Failed to sync ${sourceType}`);
+  }
+
+  return response.json();
+}
+
 export async function upsertBuiltinConnectorSecret(
   sourceType: BuiltinConnectorSourceType,
   payload: BuiltinConnectorSecretInput,

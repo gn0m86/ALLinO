@@ -178,3 +178,140 @@ def test_api_secrets_are_tenant_isolated(tmp_path) -> None:
 
         list_b = client.get("/api/v1/ingestion/connectors/builtin/secrets?tenant_id=tenant_b")
         assert list_b.json() == []
+
+
+def test_sync_builtin_connector_secret_raises_when_not_configured(tmp_path) -> None:
+    session.DB_PATH = tmp_path / "builtin_secrets_sync_not_configured.db"
+    init_db()
+
+    from app.services.connector_sync import (
+        BuiltinConnectorSecretNotConfiguredError,
+        sync_builtin_connector_secret,
+    )
+    import pytest
+
+    with pytest.raises(BuiltinConnectorSecretNotConfiguredError):
+        sync_builtin_connector_secret(tenant_id="tenant_demo", source_type="github")
+
+
+def test_sync_builtin_connector_secret_constructs_connector_from_config(tmp_path, monkeypatch) -> None:
+    session.DB_PATH = tmp_path / "builtin_secrets_sync_constructs.db"
+    init_db()
+
+    from app.connectors.rocketchat_connector import RocketChatConnector
+    from app.services import connector_sync
+
+    upsert_builtin_connector_secret(
+        tenant_id="tenant_demo",
+        source_type="rocketchat",
+        config={
+            "token": "rc-token",
+            "user_id": "rc-user",
+            "base_url": "https://chat.example.invalid",
+            "channel_id": "GENERAL",
+        },
+        poll_interval_seconds=None,
+    )
+
+    seen: dict = {}
+
+    def fake_sync(*, connector, source, tenant_id, action_prefix):
+        seen["connector"] = connector
+        seen["source"] = source
+        seen["tenant_id"] = tenant_id
+        return {"tenant_id": tenant_id, "processed": 1, "inserted": 1, "duplicates": 0, "rejected": 0}
+
+    monkeypatch.setattr(connector_sync, "sync_builtin_connector", fake_sync)
+
+    result = connector_sync.sync_builtin_connector_secret(tenant_id="tenant_demo", source_type="rocketchat")
+
+    assert result["processed"] == 1
+    assert seen["source"] == "rocketchat"
+    assert seen["tenant_id"] == "tenant_demo"
+    assert isinstance(seen["connector"], RocketChatConnector)
+    assert seen["connector"].token == "rc-token"
+    assert seen["connector"].user_id == "rc-user"
+    assert seen["connector"].base_url == "https://chat.example.invalid"
+    assert seen["connector"].channel_id == "GENERAL"
+
+
+def test_sync_builtin_connector_secret_routes_google_calendar(tmp_path, monkeypatch) -> None:
+    session.DB_PATH = tmp_path / "builtin_secrets_sync_gcal.db"
+    init_db()
+
+    from app.services import connector_sync
+
+    upsert_builtin_connector_secret(
+        tenant_id="tenant_demo",
+        source_type="google_calendar",
+        config={"token": "gcal-token", "calendar_id": "team@example.invalid"},
+        poll_interval_seconds=None,
+    )
+
+    seen: dict = {}
+
+    def fake_sync(*, tenant_id, calendar_id=None, token=None, retry_policy=None, seeded_events=None):
+        seen["tenant_id"] = tenant_id
+        seen["calendar_id"] = calendar_id
+        seen["token"] = token
+        return {"tenant_id": tenant_id, "processed": 0, "inserted": 0, "duplicates": 0, "rejected": 0}
+
+    monkeypatch.setattr(connector_sync, "sync_google_calendar_connector", fake_sync)
+
+    connector_sync.sync_builtin_connector_secret(tenant_id="tenant_demo", source_type="google_calendar")
+
+    assert seen == {"tenant_id": "tenant_demo", "calendar_id": "team@example.invalid", "token": "gcal-token"}
+
+
+def test_api_sync_endpoint_404_when_not_configured(tmp_path) -> None:
+    session.DB_PATH = tmp_path / "builtin_secrets_api_sync_404.db"
+
+    with TestClient(app) as client:
+        resp = client.post("/api/v1/ingestion/connectors/builtin/github/sync?tenant_id=tenant_demo")
+        assert resp.status_code == 404
+
+
+def test_api_sync_endpoint_success(tmp_path, monkeypatch) -> None:
+    session.DB_PATH = tmp_path / "builtin_secrets_api_sync_success.db"
+
+    from app.api import builtin_connector_secrets as api_module
+
+    def fake_sync(*, tenant_id, source_type):
+        return {"tenant_id": tenant_id, "processed": 3, "inserted": 2, "duplicates": 1, "rejected": 0}
+
+    monkeypatch.setattr(api_module, "sync_builtin_connector_secret", fake_sync)
+
+    with TestClient(app) as client:
+        client.post(
+            "/api/v1/ingestion/connectors/builtin/github/secret?tenant_id=tenant_demo",
+            json={"token": "ghp_example"},
+        )
+
+        resp = client.post("/api/v1/ingestion/connectors/builtin/github/sync?tenant_id=tenant_demo")
+
+        assert resp.status_code == 200
+        assert resp.json()["inserted"] == 2
+
+
+def test_api_sync_endpoint_502_on_sync_error(tmp_path, monkeypatch) -> None:
+    session.DB_PATH = tmp_path / "builtin_secrets_api_sync_error.db"
+
+    import httpx
+
+    from app.connectors.github_connector import GitHubConnector
+
+    def unauthorized(self: GitHubConnector) -> list[dict]:
+        request = httpx.Request("GET", "https://api.github.com/notifications")
+        response = httpx.Response(status_code=401, request=request)
+        raise httpx.HTTPStatusError("unauthorized", request=request, response=response)
+
+    monkeypatch.setattr(GitHubConnector, "_fetch_notifications_from_api", unauthorized)
+
+    with TestClient(app) as client:
+        client.post(
+            "/api/v1/ingestion/connectors/builtin/github/secret?tenant_id=tenant_demo",
+            json={"token": "invalid-token"},
+        )
+
+        resp = client.post("/api/v1/ingestion/connectors/builtin/github/sync?tenant_id=tenant_demo")
+        assert resp.status_code == 502

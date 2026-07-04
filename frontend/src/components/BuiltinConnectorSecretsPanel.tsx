@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import {
 	deleteBuiltinConnectorSecret,
 	fetchBuiltinConnectorSecrets,
+	syncBuiltinConnectorSecret,
 	upsertBuiltinConnectorSecret,
 } from "../lib/api"
 import { BuiltinConnectorSecretSummary, BuiltinConnectorSourceType } from "../lib/types"
@@ -92,6 +93,8 @@ export function BuiltinConnectorSecretsPanel() {
 	const [submitting, setSubmitting] = useState(false)
 	const [formError, setFormError] = useState<string | null>(null)
 	const [deletingSource, setDeletingSource] = useState<BuiltinConnectorSourceType | null>(null)
+	const [syncingSource, setSyncingSource] = useState<BuiltinConnectorSourceType | null>(null)
+	const [rowMessage, setRowMessage] = useState<Record<string, { text: string; isError: boolean }>>({})
 	const disposedRef = useRef(false)
 
 	const load = () => {
@@ -157,6 +160,12 @@ export function BuiltinConnectorSecretsPanel() {
 			setConfigured((prev) => ({ ...prev, [source]: summary }))
 			setOpenSource(null)
 			setForm(EMPTY_FORM)
+			setRowMessage((prev) => ({
+				...prev,
+				[source]: summary.poll_interval_seconds
+					? { text: `Saved. Will auto-sync roughly every ${summary.poll_interval_seconds}s.`, isError: false }
+					: { text: "Saved, but no poll interval was set — this will NOT sync automatically. Use \"Sync now\" below, or Edit and set an interval.", isError: true },
+			}))
 		} catch (e: unknown) {
 			setFormError(e instanceof Error ? e.message : "Failed to save secret")
 		} finally {
@@ -173,10 +182,36 @@ export function BuiltinConnectorSecretsPanel() {
 				delete next[source]
 				return next
 			})
+			setRowMessage((prev) => {
+				const next = { ...prev }
+				delete next[source]
+				return next
+			})
 		} catch (e: unknown) {
 			setError(e instanceof Error ? e.message : "Failed to delete secret")
 		} finally {
 			setDeletingSource(null)
+		}
+	}
+
+	async function handleSync(source: BuiltinConnectorSourceType) {
+		setSyncingSource(source)
+		try {
+			const result = await syncBuiltinConnectorSecret(source)
+			setRowMessage((prev) => ({
+				...prev,
+				[source]: {
+					text: `Synced now: ${result.processed} processed, ${result.inserted} inserted, ${result.duplicates} duplicates, ${result.rejected} rejected.`,
+					isError: false,
+				},
+			}))
+		} catch (e: unknown) {
+			setRowMessage((prev) => ({
+				...prev,
+				[source]: { text: e instanceof Error ? e.message : "Sync failed", isError: true },
+			}))
+		} finally {
+			setSyncingSource(null)
 		}
 	}
 
@@ -254,6 +289,27 @@ export function BuiltinConnectorSecretsPanel() {
 										</div>
 									</div>
 									<div style={{ display: "flex", gap: 6 }}>
+										{summary && (
+											<button
+												onClick={() => void handleSync(source)}
+												disabled={syncingSource === source}
+												aria-label={`Sync ${SOURCE_LABELS[source]} now`}
+												style={{
+													fontSize: 11,
+													fontFamily: "var(--font-mono)",
+													color: "var(--accent)",
+													background: "transparent",
+													border: "1px solid var(--border)",
+													borderRadius: "var(--r-btn)",
+													padding: "4px 8px",
+													cursor: syncingSource === source ? "default" : "pointer",
+													opacity: syncingSource === source ? 0.6 : 1,
+													whiteSpace: "nowrap",
+												}}
+											>
+												{syncingSource === source ? "Syncing…" : "Sync now"}
+											</button>
+										)}
 										<button
 											onClick={() => openForm(source)}
 											aria-label={`${summary ? "Edit" : "Configure"} ${SOURCE_LABELS[source]} credentials`}
@@ -293,6 +349,24 @@ export function BuiltinConnectorSecretsPanel() {
 										)}
 									</div>
 								</div>
+
+								{summary && !summary.poll_interval_seconds && (
+									<div style={{ fontSize: 11, color: "var(--danger)", marginTop: 4 }}>
+										No poll interval set — this will not sync automatically. Use "Sync now", or Edit and set an interval.
+									</div>
+								)}
+
+								{rowMessage[source] && (
+									<div
+										style={{
+											fontSize: 11,
+											color: rowMessage[source].isError ? "var(--danger)" : "var(--text-2)",
+											marginTop: 4,
+										}}
+									>
+										{rowMessage[source].text}
+									</div>
+								)}
 
 								{openSource === source && (
 									<div

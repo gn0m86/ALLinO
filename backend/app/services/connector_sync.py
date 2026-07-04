@@ -4,14 +4,43 @@ from datetime import datetime, timezone
 from typing import Any
 
 from ..connectors.base import RetryPolicy
+from ..connectors.discord_connector import DiscordConnector
 from ..connectors.generic_http_connector import GenericHttpConnector
+from ..connectors.github_connector import GitHubConnector
+from ..connectors.gitlab_connector import GitLabConnector
 from ..connectors.google_calendar_connector import GoogleCalendarConnector
+from ..connectors.jira_connector import JiraConnector
+from ..connectors.linear_connector import LinearConnector
+from ..connectors.rocketchat_connector import RocketChatConnector
+from ..connectors.slack_connector import SlackConnector
+from ..connectors.teams_connector import TeamsConnector
+from ..connectors.telegram_connector import TelegramConnector
+from ..connectors.zoom_connector import ZoomConnector
+from ..db.repositories.builtin_connector_secrets_repo import get_builtin_connector_secret
 from ..db.repositories.connector_runs_repo import append_connector_run
 from ..db.repositories.connectors_repo import upsert_connector_status
 from ..services.audit import log_custom
 from ..services.event_bus import process_connector_events
 from ..services.ingestion_processor import process_connector_batch
 from ..services.metrics import get_metrics_store
+
+# Connector class + which extra constructor kwargs (beyond tenant_id/token/
+# retry_policy) to pull from a decrypted builtin_connector_secrets config blob,
+# if present. Mirrors backend/app/api/builtin_connector_secrets.py's
+# _EXTRA_FIELDS. Google Calendar is handled separately since it goes through
+# sync_google_calendar_connector, not a bare connector class.
+BUILTIN_SOURCE_CONNECTOR_MAP: dict[str, tuple[type, tuple[str, ...]]] = {
+    "github": (GitHubConnector, ()),
+    "gitlab": (GitLabConnector, ("base_url",)),
+    "jira": (JiraConnector, ("base_url",)),
+    "linear": (LinearConnector, ()),
+    "telegram": (TelegramConnector, ()),
+    "slack": (SlackConnector, ("channel_id",)),
+    "discord": (DiscordConnector, ("channel_id",)),
+    "zoom": (ZoomConnector, ()),
+    "teams": (TeamsConnector, ()),
+    "rocketchat": (RocketChatConnector, ("user_id", "base_url", "channel_id")),
+}
 
 
 class GenericConnectorSyncError(RuntimeError):
@@ -26,6 +55,13 @@ class GoogleCalendarSyncError(RuntimeError):
         super().__init__(f"google_calendar sync failed for tenant '{tenant_id}'")
         self.tenant_id = tenant_id
         self.__cause__ = cause
+
+
+class BuiltinConnectorSecretNotConfiguredError(RuntimeError):
+    def __init__(self, tenant_id: str, source_type: str) -> None:
+        super().__init__(f"no secret configured for tenant '{tenant_id}' source '{source_type}'")
+        self.tenant_id = tenant_id
+        self.source_type = source_type
 
 
 class BuiltinConnectorSyncError(RuntimeError):
@@ -252,3 +288,30 @@ def sync_builtin_connector(
         raise BuiltinConnectorSyncError(source, tenant_id, exc) from exc
     finally:
         connector.stop()
+
+
+def sync_builtin_connector_secret(*, tenant_id: str, source_type: str) -> dict[str, Any]:
+    """On-demand ("Sync now") sync for a tenant's own DB-configured builtin
+    connector secret (Sprint 31). Used by the manual sync endpoint; the
+    scheduler worker has its own equivalent loop for the recurring path."""
+    row = get_builtin_connector_secret(tenant_id=tenant_id, source_type=source_type)
+    if row is None:
+        raise BuiltinConnectorSecretNotConfiguredError(tenant_id, source_type)
+    config = row["config"]
+
+    if source_type == "google_calendar":
+        return sync_google_calendar_connector(
+            tenant_id=tenant_id,
+            calendar_id=config.get("calendar_id"),
+            token=config.get("token"),
+        )
+
+    connector_cls, extra_fields = BUILTIN_SOURCE_CONNECTOR_MAP[source_type]
+    extra_kwargs = {field: config[field] for field in extra_fields if config.get(field)}
+    connector = connector_cls(tenant_id=tenant_id, token=config.get("token"), **extra_kwargs)
+    return sync_builtin_connector(
+        connector=connector,
+        source=source_type,
+        tenant_id=tenant_id,
+        action_prefix=f"connector.{source_type}.sync",
+    )
