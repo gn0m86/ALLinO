@@ -132,3 +132,26 @@ def test_connector_capabilities_support_vault_backed_secret_lookup(tmp_path, mon
     by_source = {item["source_type"]: item for item in response.json()}
     assert by_source["teams"]["configured"] is True
     assert by_source["github"]["configured"] is False
+
+
+def test_connector_capabilities_reflect_own_db_configured_secret(tmp_path, monkeypatch) -> None:
+    """A tenant's own DB-configured credential (Sprint 31) should count as
+    "configured" even when no deployment-wide env var is set -- otherwise the
+    Sidebar keeps showing "not configured" forever after a successful setup."""
+    session.DB_PATH = tmp_path / "connector_capabilities_own_secret.db"
+    monkeypatch.delenv("ALLINO_GITHUB_TOKEN", raising=False)
+
+    from app.db.repositories.builtin_connector_secrets_repo import upsert_builtin_connector_secret
+
+    with TestClient(app) as client:
+        upsert_builtin_connector_secret(
+            tenant_id="tenant_demo", source_type="github", config={"token": "own-token"}, poll_interval_seconds=None
+        )
+
+        response = client.get("/api/v1/ingestion/connectors/capabilities?tenant_id=tenant_demo")
+        by_source = {item["source_type"]: item for item in response.json()}
+        assert by_source["github"]["configured"] is True
+
+        other_tenant_response = client.get("/api/v1/ingestion/connectors/capabilities?tenant_id=tenant_other")
+        by_source_other = {item["source_type"]: item for item in other_tenant_response.json()}
+        assert by_source_other["github"]["configured"] is False

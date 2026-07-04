@@ -26,6 +26,7 @@ from ..core.security import (
 from ..core.secrets import has_secret_value
 from ..core.tenant import resolve_tenant_id
 from ..db.repositories.audit_repo import count_audit, list_audit
+from ..db.repositories.builtin_connector_secrets_repo import get_builtin_connector_secret
 from ..db.repositories.connectors_repo import list_connectors, upsert_connector_status
 from ..db.repositories.connector_runs_repo import append_connector_run, list_connector_runs
 from ..db.repositories.messages_repo import (
@@ -722,17 +723,26 @@ def ingestion_connector_capabilities(
     _: None = Depends(require_ingestion_read_permission),
 ) -> list[dict[str, Any]]:
     """Return connector capability matrix for UI source rendering."""
-    _ = tenant_id
-    github_configured = has_secret_value("ALLINO_GITHUB_TOKEN")
-    gitlab_configured = has_secret_value("ALLINO_GITLAB_TOKEN")
-    jira_configured = has_secret_value("ALLINO_JIRA_TOKEN")
-    linear_configured = has_secret_value("ALLINO_LINEAR_TOKEN")
-    telegram_configured = has_secret_value("ALLINO_TELEGRAM_BOT_TOKEN")
-    slack_configured = has_secret_value("ALLINO_SLACK_BOT_TOKEN") and has_secret_value("ALLINO_SLACK_CHANNEL_ID")
-    discord_configured = has_secret_value("ALLINO_DISCORD_BOT_TOKEN") and has_secret_value("ALLINO_DISCORD_CHANNEL_ID")
-    zoom_configured = has_secret_value("ALLINO_ZOOM_TOKEN")
-    teams_configured = has_secret_value("ALLINO_TEAMS_TOKEN")
-    google_calendar_configured = has_secret_value("ALLINO_GOOGLE_CALENDAR_TOKEN")
+
+    def _has_own_secret(source_type: str) -> bool:
+        # A tenant's own DB-configured credential (Sprint 31) is just as valid as
+        # the deployment-wide env/Vault one -- either should count as "configured".
+        return get_builtin_connector_secret(tenant_id=tenant_id, source_type=source_type) is not None
+
+    github_configured = has_secret_value("ALLINO_GITHUB_TOKEN") or _has_own_secret("github")
+    gitlab_configured = has_secret_value("ALLINO_GITLAB_TOKEN") or _has_own_secret("gitlab")
+    jira_configured = has_secret_value("ALLINO_JIRA_TOKEN") or _has_own_secret("jira")
+    linear_configured = has_secret_value("ALLINO_LINEAR_TOKEN") or _has_own_secret("linear")
+    telegram_configured = has_secret_value("ALLINO_TELEGRAM_BOT_TOKEN") or _has_own_secret("telegram")
+    slack_configured = (
+        has_secret_value("ALLINO_SLACK_BOT_TOKEN") and has_secret_value("ALLINO_SLACK_CHANNEL_ID")
+    ) or _has_own_secret("slack")
+    discord_configured = (
+        has_secret_value("ALLINO_DISCORD_BOT_TOKEN") and has_secret_value("ALLINO_DISCORD_CHANNEL_ID")
+    ) or _has_own_secret("discord")
+    zoom_configured = has_secret_value("ALLINO_ZOOM_TOKEN") or _has_own_secret("zoom")
+    teams_configured = has_secret_value("ALLINO_TEAMS_TOKEN") or _has_own_secret("teams")
+    google_calendar_configured = has_secret_value("ALLINO_GOOGLE_CALENDAR_TOKEN") or _has_own_secret("google_calendar")
     # ALLINO_ROCKETCHAT_CHANNEL_ID is intentionally not required here -- when unset,
     # the connector watches every room the configured user belongs to instead of one
     # specific channel (see RocketChatConnector._fetch_messages_from_api).
@@ -740,7 +750,7 @@ def ingestion_connector_capabilities(
         has_secret_value("ALLINO_ROCKETCHAT_TOKEN")
         and has_secret_value("ALLINO_ROCKETCHAT_USER_ID")
         and has_secret_value("ALLINO_ROCKETCHAT_BASE_URL")
-    )
+    ) or _has_own_secret("rocketchat")
 
     return [
         {
