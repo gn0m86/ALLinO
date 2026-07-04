@@ -9,6 +9,7 @@ import { AdminAuditExport } from "./AdminAuditExport"
 import { ApiKeyRotatePanel } from "./ApiKeyRotatePanel"
 import { ApiKeySettings } from "./ApiKeySettings"
 import { DangerZone } from "./DangerZone"
+import { BuiltinConnectorSecretsPanel } from "./BuiltinConnectorSecretsPanel"
 import { GenericConnectorsPanel } from "./GenericConnectorsPanel"
 import { TimeDisplaySettings } from "./TimeDisplaySettings"
 
@@ -173,10 +174,13 @@ export function SettingsPanel({ capabilities = [], connectors = [] }: Props) {
 						))
 					)}
 					<div style={{ marginTop: 10, fontSize: 11, color: "var(--text-3)" }}>
-						Connector secrets are configured via environment variables (or Vault, if enabled) on the
-						backend — there is nothing to edit here for security reasons.
+						The deployment-wide credential for each source (if any) is configured via
+						environment variables (or Vault, if enabled) on the backend. Use "Your Own
+						Credentials" below to bring your own token for this tenant instead.
 					</div>
 				</div>
+
+				<BuiltinConnectorSecretsPanel />
 
 				<GenericConnectorsPanel />
 
