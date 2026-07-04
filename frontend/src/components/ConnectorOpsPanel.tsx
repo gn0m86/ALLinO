@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 
 import { ConnectorRun, ConnectorStatus } from "../lib/types"
+import { useTimePrefs } from "../lib/timePrefs"
 
 type Props = {
 	connectors?: ConnectorStatus[]
@@ -24,17 +25,24 @@ function statusColor(status: string): string {
 	}
 }
 
-function formatTime(value: string | null | undefined): string {
-	if (!value) return "n/a"
-	const d = new Date(value)
-	if (Number.isNaN(d.getTime())) return "n/a"
-	return d.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
-}
-
 export function ConnectorOpsPanel({ connectors = [], runs = [], refreshing = false, lastUpdatedAt = null }: Props) {
 	const [sourceFilter, setSourceFilter] = useState<string>("all")
 	const [statusFilter, setStatusFilter] = useState<string>("all")
 	const [selectedRunId, setSelectedRunId] = useState<number | null>(null)
+	const timePrefs = useTimePrefs()
+
+	function formatTime(value: string | null | undefined): string {
+		if (!value) return "n/a"
+		const d = new Date(value)
+		if (Number.isNaN(d.getTime())) return "n/a"
+		return d.toLocaleTimeString("en-GB", {
+			timeZone: timePrefs.myTimezone,
+			hour: "2-digit",
+			minute: "2-digit",
+			second: "2-digit",
+			hour12: timePrefs.hourCycle === "12h",
+		})
+	}
 
 	const sourceOptions = useMemo(() => {
 		const set = new Set<string>(runs.map((r) => r.source_type.toLowerCase()))

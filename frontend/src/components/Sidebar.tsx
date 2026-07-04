@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react"
 import { ConnectorCapability, ConnectorRun, ConnectorStatus, Mode } from "../lib/types"
+import { useTimePrefs } from "../lib/timePrefs"
 import {
 	AlertIcon,
 	InboxIcon,
@@ -69,6 +70,8 @@ export function Sidebar({
 	onRefreshConnectors,
 	width = 218,
 }: Props) {
+	const timePrefs = useTimePrefs()
+
 	function getConnector(sourceId: string): ConnectorStatus | undefined {
 		return connectors.find((c) => c.source_type.toLowerCase() === sourceId.toLowerCase())
 	}
@@ -95,20 +98,37 @@ export function Sidebar({
 		if (!value) return "Never"
 		const d = new Date(value)
 		if (Number.isNaN(d.getTime())) return "Unknown"
-		return d.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+		return d.toLocaleTimeString("en-GB", {
+			timeZone: timePrefs.myTimezone,
+			hour: "2-digit",
+			minute: "2-digit",
+			second: "2-digit",
+			hour12: timePrefs.hourCycle === "12h",
+		})
 	}
 
 	function formatSyncAt(value: string | null): string {
 		if (!value) return "sync: n/a"
 		const d = new Date(value)
 		if (Number.isNaN(d.getTime())) return "sync: ?"
-		return `sync: ${d.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit" })}`
+		return `sync: ${d.toLocaleTimeString("en-GB", {
+			timeZone: timePrefs.myTimezone,
+			hour: "2-digit",
+			minute: "2-digit",
+			hour12: timePrefs.hourCycle === "12h",
+		})}`
 	}
 
 	function formatRunAt(value: string): string {
 		const d = new Date(value)
 		if (Number.isNaN(d.getTime())) return "--:--"
-		return d.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+		return d.toLocaleTimeString("en-GB", {
+			timeZone: timePrefs.myTimezone,
+			hour: "2-digit",
+			minute: "2-digit",
+			second: "2-digit",
+			hour12: timePrefs.hourCycle === "12h",
+		})
 	}
 
 	const visibleSources = connectorCapabilities
