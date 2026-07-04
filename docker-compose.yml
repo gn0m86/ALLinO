@@ -2,6 +2,7 @@ services:
   backend:
     build:
       context: ./backend
+    restart: unless-stopped
     ports:
       - "8000:8000"
     volumes:
@@ -67,12 +68,14 @@ services:
 
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
     ports:
       - "6379:6379"
 
   event_bus_worker:
     build:
       context: ./backend
+    restart: unless-stopped
     command: ["python", "-m", "app.workers.event_bus_worker"]
     depends_on:
       - redis
@@ -95,6 +98,7 @@ services:
   scheduler_worker:
     build:
       context: ./backend
+    restart: unless-stopped
     command: ["python", "-m", "app.workers.scheduler_worker"]
     volumes:
       - allino_data:/app/data
@@ -148,6 +152,7 @@ services:
       args:
         NEXT_PUBLIC_BACKEND_URL: "${NEXT_PUBLIC_BACKEND_URL:-http://localhost:8000}"
         NEXT_PUBLIC_TENANT_ID: "${NEXT_PUBLIC_TENANT_ID:-tenant_demo}"
+    restart: unless-stopped
     ports:
       - "3000:3000"
     depends_on:
