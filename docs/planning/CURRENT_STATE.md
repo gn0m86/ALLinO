@@ -2098,6 +2098,41 @@ local prod/dev split:
   is entirely local. See `docs/planning/SPRINT31_TASK_BOARD.md` for the
   full narrative including the two `AskUserQuestion` forks.
 
+2026-07-04 — Channel-browser grouping extended to Telegram; full-user-access
+Telegram explicitly deferred:
+
+- Rocket.Chat already had a "grouped by Teams/Channels/Direct messages"
+  Inbox view (`ChannelBrowser.tsx`/`ChannelTranscript.tsx`, a
+  `channel_kind` field on messages, `/channels` API) predating this
+  project's own tracked sprint history — built in an earlier untracked
+  session, not documented until now. Extended it to Telegram:
+  `map_telegram_update_to_unified_event` now classifies `chat.type`
+  ("private" -> `dm`; group/supergroup/channel -> `channel` — Telegram has
+  no team/workspace concept like Slack/Rocket.Chat, so this is a two-way
+  split not three-way), and `telegram` was added to the frontend's
+  `CHAT_SHAPED_SOURCES`. The normalizer/`/channels` API needed zero
+  changes — already fully source-agnostic.
+- **Full user-account access to Telegram (MTProto/"userbot" login,
+  equivalent to logging into the account from another device) was
+  explicitly discussed and deferred by the user**, not silently skipped.
+  User asked directly why Rocket.Chat's own token (which grants comparably
+  broad access within its instance) wasn't treated with the same alarm —
+  fair challenge. The real distinguishing factor, explained and accepted:
+  Rocket.Chat's Personal Access Token is a platform-sanctioned, scoped,
+  independently-revocable delegated-access mechanism, built by Rocket.Chat
+  specifically for third-party integrations. Telegram has no equivalent
+  mechanism for personal accounts — an MTProto user session is not
+  delegated access, it's the same login primitive the official client
+  uses, with no partial-scope or independent revocation, and carries
+  additional Telegram ToS/automation-detection risk that a sanctioned API
+  token does not. **Decision, not a technical blocker**: the user accepted
+  Bot API's limits (no visibility into personal DMs with other people,
+  can't see channel/group history before the bot was added) for now.
+  Revisit only on an explicit future request — if picked up, expect a
+  genuinely new connector architecture (interactive phone+code login flow,
+  session-string storage, its own security review), not an incremental
+  extension of `TelegramConnector`.
+
 ## 5) What to read first in a new session
 
 1. ../../CLAUDE.md
