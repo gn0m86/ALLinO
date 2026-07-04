@@ -2132,6 +2132,20 @@ Telegram explicitly deferred:
   genuinely new connector architecture (interactive phone+code login flow,
   session-string storage, its own security review), not an incremental
   extension of `TelegramConnector`.
+- **Same-day follow-up**: user asked specifically about QR-code login
+  (scan with phone, like Telegram Desktop/Web) instead of phone+SMS-code,
+  wondering if that changes the risk. Answered honestly: no — QR login is
+  a real, legitimate Telegram authentication method (and libraries like
+  Telethon/Pyrogram support it), but it's a different way to *establish*
+  the same full-account MTProto session, not a smaller-scope one. Same
+  leak consequences, same single-revocation-point ("Active Sessions" in
+  Telegram itself), same ToS/automation-detection exposure; Telegram's own
+  2FA password prompt (if the account has one) applies identically
+  regardless of QR vs. phone+code, it's not something ALLinO would add on
+  top. User was given the real scope of building this (live QR-display UI,
+  polling for phone approval, 2FA password handling, encrypted session
+  storage — a new connector architecture, not a token field) and explicitly
+  chose to stay on Bot API rather than start it now.
 
 ## 5) What to read first in a new session
 
