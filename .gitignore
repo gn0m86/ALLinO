@@ -30,6 +30,7 @@ frontend/tsconfig.tsbuildinfo
 # IDE
 .vscode/
 .idea/
+.claude/
 *.swp
 *.swo
 
