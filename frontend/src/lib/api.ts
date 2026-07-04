@@ -1,5 +1,8 @@
 import {
   AuditLogEntry,
+  BuiltinConnectorSecretInput,
+  BuiltinConnectorSecretSummary,
+  BuiltinConnectorSourceType,
   ChannelSummary,
   ConnectorCapability,
   DigestResponse,
@@ -560,6 +563,70 @@ export async function deleteGenericConnector(
 
   if (!response.ok) {
     return parseErrorDetail(response, "Failed to delete generic connector");
+  }
+}
+
+export async function fetchBuiltinConnectorSecrets(
+  signal?: AbortSignal,
+): Promise<BuiltinConnectorSecretSummary[]> {
+  const url = new URL("/api/v1/ingestion/connectors/builtin/secrets", BACKEND_URL);
+
+  const response = await fetch(url.toString(), {
+    cache: "no-store",
+    signal,
+    headers: baseHeaders(),
+  });
+
+  if (!response.ok) {
+    return parseErrorDetail(response, "Failed to load builtin connector secrets");
+  }
+
+  return response.json();
+}
+
+export async function upsertBuiltinConnectorSecret(
+  sourceType: BuiltinConnectorSourceType,
+  payload: BuiltinConnectorSecretInput,
+  signal?: AbortSignal,
+): Promise<BuiltinConnectorSecretSummary> {
+  const url = new URL(
+    `/api/v1/ingestion/connectors/builtin/${encodeURIComponent(sourceType)}/secret`,
+    BACKEND_URL,
+  );
+
+  const response = await fetch(url.toString(), {
+    method: "POST",
+    cache: "no-store",
+    signal,
+    headers: baseHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    return parseErrorDetail(response, `Failed to save ${sourceType} secret`);
+  }
+
+  return response.json();
+}
+
+export async function deleteBuiltinConnectorSecret(
+  sourceType: BuiltinConnectorSourceType,
+  signal?: AbortSignal,
+): Promise<void> {
+  const url = new URL(
+    `/api/v1/ingestion/connectors/builtin/${encodeURIComponent(sourceType)}/secret`,
+    BACKEND_URL,
+  );
+
+  const response = await fetch(url.toString(), {
+    method: "DELETE",
+    cache: "no-store",
+    signal,
+    headers: baseHeaders(),
+  });
+
+  if (!response.ok) {
+    return parseErrorDetail(response, `Failed to delete ${sourceType} secret`);
   }
 }
 

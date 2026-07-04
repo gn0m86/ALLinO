@@ -66,8 +66,8 @@ export function OnboardingScreen({ onGoToSettings, onSkip }: Props) {
 					</div>
 					<p style={{ fontSize: 12, color: "var(--text-2)", margin: "0 0 12px" }}>
 						GitHub, GitLab, Jira, Linear, Telegram, Slack, Discord, Zoom, Teams, Google Calendar,
-						Rocket.Chat. Each is configured via an environment variable on the backend — secrets
-						are never entered through this UI, for security.
+						Rocket.Chat. Each has a deployment-wide credential set via an environment variable
+						on the backend, or you can bring your own per-tenant token from Settings.
 					</p>
 					<button
 						onClick={onGoToSettings}

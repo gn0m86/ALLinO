@@ -161,3 +161,34 @@ export type GenericConnectorUpdateInput = {
   webhook_enabled?: boolean;
 };
 
+export type BuiltinConnectorSourceType =
+  | "github"
+  | "gitlab"
+  | "jira"
+  | "linear"
+  | "telegram"
+  | "slack"
+  | "discord"
+  | "zoom"
+  | "teams"
+  | "rocketchat"
+  | "google_calendar";
+
+export type BuiltinConnectorSecretSummary = {
+  source_type: BuiltinConnectorSourceType;
+  configured: true;
+  poll_interval_seconds: number | null;
+  status: string;
+  created_at: string;
+  updated_at: string | null;
+};
+
+export type BuiltinConnectorSecretInput = {
+  token: string;
+  base_url?: string | null;
+  user_id?: string | null;
+  channel_id?: string | null;
+  calendar_id?: string | null;
+  poll_interval_seconds?: number | null;
+};
+

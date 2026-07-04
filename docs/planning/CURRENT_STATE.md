@@ -2033,21 +2033,106 @@ production-breaking CSP bug found and fixed while verifying it in a browser:
   Calendar polling — no persisted per-tenant connector-config table exists
   for built-ins).
 
+2026-07-04 — Sprint 31 opened and closed: multi-tenant auto-sync for
+built-in connectors, plus the project's first git repo and a persistent
+local prod/dev split:
+
+- User picked this item from the known-gaps list (WhatsApp/Viber, local AI
+  classifier, multi-tenant auto-sync) via `AskUserQuestion`. A real fork
+  came up before writing code: how to store a second/third tenant's own
+  GitHub/Jira/etc. credentials, since these previously only came from
+  global env vars. Asked the user directly; picked **encrypted DB
+  storage** (new `builtin_connector_secrets` table, Fernet-encrypted JSON
+  blob via the existing `core/crypto.py`, same envelope as
+  `messages.preview`) over the env-var-per-tenant-naming alternative.
+- New: migration `0019_builtin_connector_secrets.sql`,
+  `db/repositories/builtin_connector_secrets_repo.py`,
+  `api/builtin_connector_secrets.py` (`POST/DELETE
+  .../builtin/{source_type}/secret`, `GET .../builtin/secrets` — never
+  returns decrypted tokens, only `configured: true`). Covers all 10
+  built-in named connectors plus `google_calendar` (11 source types) in
+  one table.
+- `workers/scheduler_worker.py`: new loop over
+  `list_builtin_connector_secrets_with_polling()`, keyed by the same
+  `f"{tenant_id}:{source}"` due-check as the pre-existing single-env-tenant
+  path. The legacy env path (`ALLINO_BUILTIN_CONNECTORS_POLL_*`) is kept,
+  not replaced — deployments relying on it still work — but now skips any
+  `(tenant_id, source)` pair that already has a DB-configured row, so a
+  tenant is never double-synced.
+- Frontend: new `components/BuiltinConnectorSecretsPanel.tsx` ("Your Own
+  Credentials"), mounted in `SettingsPanel.tsx` above `GenericConnectorsPanel`.
+  Fixed outdated "secrets are never entered through this UI" copy in both
+  `SettingsPanel.tsx` and `OnboardingScreen.tsx` — no longer true.
+- Tests: 5 repo + 8 API + 5 scheduler tests, all in the existing sibling
+  test files' style. Backend: `pytest -q` => 396 passed (up from 324).
+  `ruff check app tests --select F,E9` clean. Frontend `tsc --noEmit` and
+  `npm run build` clean.
+- **Real scheduler subprocess verification**: stored a real-but-invalid
+  GitHub token via the new API, ran `python -m app.workers.scheduler_worker
+  --once` for real — genuine HTTP call to `api.github.com`, real `401`,
+  captured gracefully in the connector registry without crashing.
+- **Live browser verification found a real dev-mode-only bug**: in `next
+  dev`, clicking "Settings" updated `aria-current` on the nav button but
+  the Inbox 3-pane layout kept rendering instead of `SettingsPanel` — no
+  app-code bug, confirmed by switching to a production build (`next build
+  && next start`), where Settings navigation and the new panel worked
+  correctly on the first try. Matches this project's known "dev-mode HMR
+  through the sandbox's docker bridge produces app-shaped symptoms" class
+  of quirk (see the Sprint 9 entry above). Configured + edited + deleted a
+  GitHub secret through the real UI; zero real console errors.
+- **Separately this session, at the user's request**: the project had no
+  git repository at all despite 30 prior sprints. Initialized one
+  (`git init -b main`, first commit = the full working tree, 274 files —
+  `.gitignore` already correctly excluded secrets/DBs/`node_modules`/
+  `.venv`, verified before committing). Created a `dev` branch via `git
+  worktree add ../ALLinO-dev -b dev`; this sprint's frontend half was built
+  there, on its own Python venv and SQLite DB, so it never touched the
+  user's running instance. Added `restart: unless-stopped` to every
+  `docker-compose.yml` service (none had one before — the stack would not
+  have survived a host reboot). Generated a real `ALLINO_API_KEY` +
+  `ALLINO_ENCRYPTION_KEY` into a git-ignored root `.env`, then `docker
+  compose up -d --build` — confirmed all 5 services healthy, `/health`
+  returns `ok`, auth enforced. **Promotion model going forward**: user says
+  "перенеси" (or equivalent) → merge `dev` into `main` in the primary
+  worktree → `docker compose up -d --build`. Nothing pushed anywhere; this
+  is entirely local. See `docs/planning/SPRINT31_TASK_BOARD.md` for the
+  full narrative including the two `AskUserQuestion` forks.
+
 ## 5) What to read first in a new session
 
 1. ../../CLAUDE.md
 2. ../../PROJECT_MASTER_BRIEF.md (sections 1.2, 1.3, 1.4)
 3. ./PREBUILD_SPEC_V1.md
 4. ./SPRINT_PLAN_W1_W2.md
-5. ./SPRINT30_TASK_BOARD.md (most recent closed board — Sprint 1-29 boards are historical)
+5. ./SPRINT31_TASK_BOARD.md (most recent closed board — Sprint 1-30 boards are historical)
 6. ./RELEASE_HARDENING_CHECKLIST_S6.md
 7. ./AGENT_START_TEMPLATE.md
 8. this file (CURRENT_STATE.md), especially the "Open items" note under section 4
 
 ## 6) Guardrails for next agents
 
-- **Read this bullet before trusting the older ones below it in this section**:
-  Sprint 30 (2026-08-14) is the most recently closed board, not Sprint 17/18 —
+- **Read this bullet first — supersedes the Sprint 30 bullet immediately
+  below it**: Sprint 31 (2026-07-04) is the most recently closed board.
+  Built-in connector auto-sync is now genuinely multi-tenant: a
+  `builtin_connector_secrets` DB table (Fernet-encrypted config blob, same
+  as `messages.preview`) lets any tenant bring their own token for
+  GitHub/GitLab/Jira/Linear/Telegram/Slack/Discord/Zoom/Teams/Rocket.Chat/
+  Google Calendar, managed via `api/builtin_connector_secrets.py` and a new
+  "Your Own Credentials" panel in Settings. The old single-env-tenant path
+  (`ALLINO_BUILTIN_CONNECTORS_POLL_*`) still works unchanged for whichever
+  tenant it names, but is now skipped for any `(tenant_id, source)` pair
+  that also has a DB row, so there's no double-sync. **Also as of this
+  sprint: the project has a real git repository** (`git init` on `main`,
+  first commit was the pre-Sprint-31 tree). Ongoing work happens in a `dev`
+  branch/worktree (`git worktree add ../ALLinO-dev -b dev`); the primary
+  directory is reserved for `main`, which is what the persistent
+  `docker-compose` "prod" stack is built from. Promotion is user-triggered
+  ("перенеси") — merge `dev` → `main`, then `docker compose up -d --build`.
+  A root `.env` (git-ignored) holds the real `ALLINO_API_KEY` +
+  `ALLINO_ENCRYPTION_KEY` for that stack; don't regenerate these without
+  telling the user, since the frontend's stored key (Sprint 29,
+  `localStorage`) would stop matching.
+- Sprint 30 (2026-08-14) is the previously-most-recent board —
   built-in connectors (GitHub/GitLab/Jira/Linear/Telegram/Slack/Discord/Zoom/
   Teams/Rocket.Chat) now auto-sync via the scheduler worker
   (`ALLINO_BUILTIN_CONNECTORS_POLL_*`, single-env-tenant scoped like Google
