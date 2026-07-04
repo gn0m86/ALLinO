@@ -220,6 +220,9 @@ def run_scheduler_tick(*, now: datetime | None = None) -> list[dict[str, Any]]:
                     tenant_id=tenant_id,
                     calendar_id=config.get("calendar_id"),
                     token=config.get("token"),
+                    client_id=config.get("client_id"),
+                    client_secret=config.get("client_secret"),
+                    refresh_token=config.get("refresh_token"),
                     retry_policy=RetryPolicy(),
                 )
                 results.append({"tenant_id": tenant_id, "slug": source, "ok": True, **result})

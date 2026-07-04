@@ -216,7 +216,7 @@ def test_run_scheduler_tick_syncs_google_calendar_when_due(tmp_path, monkeypatch
 
     calls = []
 
-    def fake_sync(*, tenant_id, calendar_id=None, token=None, retry_policy=None, seeded_events=None):
+    def fake_sync(*, tenant_id, calendar_id=None, token=None, client_id=None, client_secret=None, refresh_token=None, retry_policy=None, seeded_events=None):
         calls.append((tenant_id, calendar_id))
         return {"tenant_id": tenant_id, "processed": 0, "inserted": 0, "duplicates": 0, "rejected": 0}
 
@@ -238,7 +238,7 @@ def test_run_scheduler_tick_records_google_calendar_failure_without_raising(tmp_
 
     from app.services.connector_sync import GoogleCalendarSyncError
 
-    def fake_sync(*, tenant_id, calendar_id=None, token=None, retry_policy=None, seeded_events=None):
+    def fake_sync(*, tenant_id, calendar_id=None, token=None, client_id=None, client_secret=None, refresh_token=None, retry_policy=None, seeded_events=None):
         raise GoogleCalendarSyncError(tenant_id, RuntimeError("boom"))
 
     monkeypatch.setattr(scheduler_worker, "sync_google_calendar_connector", fake_sync)
@@ -440,7 +440,7 @@ def test_run_scheduler_tick_syncs_db_configured_google_calendar(tmp_path, monkey
 
     calls = []
 
-    def fake_sync(*, tenant_id, calendar_id=None, token=None, retry_policy=None, seeded_events=None):
+    def fake_sync(*, tenant_id, calendar_id=None, token=None, client_id=None, client_secret=None, refresh_token=None, retry_policy=None, seeded_events=None):
         calls.append((tenant_id, calendar_id, token))
         return {"tenant_id": tenant_id, "processed": 0, "inserted": 0, "duplicates": 0, "rejected": 0}
 

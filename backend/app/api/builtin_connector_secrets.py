@@ -41,7 +41,7 @@ _EXTRA_FIELDS: dict[str, tuple[str, ...]] = {
     "zoom": (),
     "teams": (),
     "rocketchat": ("user_id", "base_url", "channel_id"),
-    "google_calendar": ("calendar_id",),
+    "google_calendar": ("calendar_id", "client_id", "client_secret", "refresh_token"),
 }
 _REQUIRED_EXTRA_FIELDS: dict[str, tuple[str, ...]] = {
     "rocketchat": ("user_id", "base_url"),
@@ -50,11 +50,18 @@ _REQUIRED_EXTRA_FIELDS: dict[str, tuple[str, ...]] = {
 
 class BuiltinConnectorSecretRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    token: str = Field(min_length=1)
+    # Every source except google_calendar requires this (enforced in the endpoint,
+    # not here, since google_calendar can authenticate via client_id/client_secret/
+    # refresh_token instead -- see refresh_google_access_token in
+    # connectors/google_calendar_connector.py).
+    token: str | None = Field(default=None, min_length=1)
     base_url: str | None = None
     user_id: str | None = None
     channel_id: str | None = None
     calendar_id: str | None = None
+    client_id: str | None = None
+    client_secret: str | None = None
+    refresh_token: str | None = None
     poll_interval_seconds: int | None = Field(default=None, ge=30, le=86400)
 
 
@@ -82,7 +89,19 @@ def upsert_builtin_connector_secret_endpoint(
         if not getattr(payload, field):
             raise HTTPException(status_code=422, detail=f"{field} is required for source_type '{source_type}'")
 
-    config: dict[str, Any] = {"token": payload.token}
+    has_oauth_refresh = bool(payload.client_id and payload.client_secret and payload.refresh_token)
+    if source_type == "google_calendar":
+        if not payload.token and not has_oauth_refresh:
+            raise HTTPException(
+                status_code=422,
+                detail="google_calendar requires either token, or client_id + client_secret + refresh_token",
+            )
+    elif not payload.token:
+        raise HTTPException(status_code=422, detail=f"token is required for source_type '{source_type}'")
+
+    config: dict[str, Any] = {}
+    if payload.token:
+        config["token"] = payload.token
     for field in allowed_extra:
         value = getattr(payload, field)
         if value:

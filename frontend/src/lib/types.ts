@@ -184,11 +184,17 @@ export type BuiltinConnectorSecretSummary = {
 };
 
 export type BuiltinConnectorSecretInput = {
-  token: string;
+  // Optional overall: google_calendar can authenticate via client_id/client_secret/
+  // refresh_token instead of a raw token. Every other source still requires it
+  // (enforced server-side).
+  token?: string | null;
   base_url?: string | null;
   user_id?: string | null;
   channel_id?: string | null;
   calendar_id?: string | null;
+  client_id?: string | null;
+  client_secret?: string | null;
+  refresh_token?: string | null;
   poll_interval_seconds?: number | null;
 };
 
