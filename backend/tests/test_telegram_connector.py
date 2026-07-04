@@ -20,6 +20,41 @@ def test_map_telegram_update_to_unified_event() -> None:
     assert event["eventId"] == "tg-update-9001"
     assert event["externalId"] == "-100123:101"
     assert "Ops Alerts" in event["payload"]["text"]
+    assert event["payload"]["channel_kind"] is None
+
+
+def test_map_telegram_update_classifies_private_chat_as_dm() -> None:
+    update = {
+        "update_id": 9010,
+        "message": {
+            "message_id": 200,
+            "date": 1780000000,
+            "text": "hi",
+            "chat": {"id": 555, "type": "private", "first_name": "Alex"},
+            "from": {"username": "alex"},
+        },
+    }
+
+    event = map_telegram_update_to_unified_event(update, tenant_id="tenant_demo")
+
+    assert event["payload"]["channel_kind"] == "dm"
+
+
+def test_map_telegram_update_classifies_group_and_supergroup_and_channel_as_channel() -> None:
+    for chat_type in ("group", "supergroup", "channel"):
+        update = {
+            "update_id": 9011,
+            "message": {
+                "message_id": 201,
+                "date": 1780000000,
+                "text": "hi",
+                "chat": {"id": -100999, "type": chat_type, "title": "Ops"},
+            },
+        }
+
+        event = map_telegram_update_to_unified_event(update, tenant_id="tenant_demo")
+
+        assert event["payload"]["channel_kind"] == "channel"
 
 
 def test_telegram_connector_fetch_seeded_events() -> None:

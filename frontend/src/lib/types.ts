@@ -38,7 +38,7 @@ export type ChannelSummary = {
 // Sources whose messages carry channel_kind -- only these switch the Inbox into
 // channel-browser mode (grouped by channel/DM/team) instead of the flat,
 // one-row-per-message view used by every other source.
-export const CHAT_SHAPED_SOURCES = ["rocketchat"] as const;
+export const CHAT_SHAPED_SOURCES = ["rocketchat", "telegram"] as const;
 
 export type InboxPageResponse = {
   items: InboxMessage[];

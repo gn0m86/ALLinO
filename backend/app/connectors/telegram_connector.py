@@ -28,6 +28,17 @@ def map_telegram_update_to_unified_event(
     chat = message.get("chat") or {}
     chat_id = str(chat.get("id") or "")
     chat_title = str(chat.get("title") or chat.get("username") or chat_id)
+    chat_type = str(chat.get("type") or "")
+    # Telegram has no "team"/workspace concept like Slack or Rocket.Chat -- a bot
+    # only ever sees individual chats, so this is a two-way split (unlike
+    # Rocket.Chat's team/channel/dm three-way one). See ChannelBrowser.tsx and
+    # CHAT_SHAPED_SOURCES in lib/types.ts for the frontend side of this.
+    if chat_type == "private":
+        channel_kind: str | None = "dm"
+    elif chat_type in ("group", "supergroup", "channel"):
+        channel_kind = "channel"
+    else:
+        channel_kind = None
 
     text = str(message.get("text") or message.get("caption") or "")
     from_user = message.get("from") or {}
@@ -59,6 +70,7 @@ def map_telegram_update_to_unified_event(
             # Stable per-chat anchor for thread grouping -- NOT
             # anchor_external_id (unique per message). See Sprint 31 board.
             "identifier": chat_id,
+            "channel_kind": channel_kind,
         },
         "schemaVersion": "1.0.0",
     }
