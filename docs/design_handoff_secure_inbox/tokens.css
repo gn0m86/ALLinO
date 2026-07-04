@@ -1,0 +1,179 @@
+/* ============================================================
+   Secure Unified Inbox — Design Tokens
+   Drop this into your app's global CSS. Tailwind users: map these
+   vars in tailwind.config (see README "Tailwind mapping").
+
+   Three visual directions × light/dark. Default = Quiet Slate.
+   Switch by setting data-direction / data-theme on <html> or a root node:
+     <html data-direction="slate" data-theme="light">
+   ============================================================ */
+
+/* ---------- QUIET SLATE — light (DEFAULT) ---------- */
+:root,
+[data-direction="slate"][data-theme="light"] {
+  --bg:#F4F6F9;        --surface:#FFFFFF;   --surface-2:#F0F3F7;  --surface-3:#E7ECF2;
+  --border:#E4E8EF;    --border-strong:#D2D9E2;
+  --text:#172230;      --text-2:#525F6F;    --text-3:#8A95A4;
+  --accent:#2F4A6B;    --accent-hover:#243B57; --accent-soft:#E8EDF4; --accent-ring:rgba(47,74,107,.40); --accent-fg:#FFFFFF;
+  --success:#2E7D58;   --success-soft:#E4EFE9;
+  --warning:#8A6A1E;   --warning-soft:#F3EBD6;
+  --danger:#B04242;    --danger-soft:#F4E3E2;
+  --info:#355C86;      --info-soft:#E7EDF4;
+  --shadow-1:0 1px 2px rgba(17,26,39,.04),0 1px 3px rgba(17,26,39,.05);
+  --shadow-2:0 6px 16px rgba(17,26,39,.08);
+  --shadow-3:0 18px 44px rgba(17,26,39,.14);
+  --skeleton:#E9EDF2;  --skeleton-sheen:#F5F7FA; --overlay:rgba(20,28,40,.34);
+  /* source accents (desaturated, identify-not-shout) */
+  --src-email:#5A6675; --src-email-soft:#EDF0F4;
+  --src-slack:#7A5C86; --src-slack-soft:#F0EAF3;
+  --src-telegram:#3E7CA8; --src-telegram-soft:#E7F0F6;
+  /* radii + type (shared per direction, see below) */
+  --r-chip:6px; --r-btn:8px; --r-card:10px; --r-panel:14px;
+  --font-ui:'Public Sans',system-ui,sans-serif;
+  --font-head:'Public Sans',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+  --head-weight:700; --head-tracking:-0.012em;
+}
+
+/* ---------- QUIET SLATE — dark ---------- */
+[data-direction="slate"][data-theme="dark"] {
+  --bg:#0F1722; --surface:#161F2C; --surface-2:#1D2836; --surface-3:#243140;
+  --border:#273341; --border-strong:#33424F;
+  --text:#E9EDF2; --text-2:#AAB6C4; --text-3:#6F7C8C;
+  --accent:#7FA2CC; --accent-hover:#97B4D9; --accent-soft:rgba(127,162,204,.16); --accent-ring:rgba(127,162,204,.50); --accent-fg:#0F1722;
+  --success:#6FB894; --success-soft:rgba(111,184,148,.15);
+  --warning:#D9B45A; --warning-soft:rgba(217,180,90,.15);
+  --danger:#E08585; --danger-soft:rgba(224,133,133,.16);
+  --info:#84A9D6; --info-soft:rgba(132,169,214,.16);
+  --shadow-1:0 1px 2px rgba(0,0,0,.40);
+  --shadow-2:0 8px 22px rgba(0,0,0,.45);
+  --shadow-3:0 22px 50px rgba(0,0,0,.55);
+  --skeleton:#1E2937; --skeleton-sheen:#283545; --overlay:rgba(5,9,14,.60);
+  --src-email:#A2B2C4; --src-email-soft:rgba(162,178,196,.14);
+  --src-slack:#C0A6CC; --src-slack-soft:rgba(192,166,204,.14);
+  --src-telegram:#86B6D8; --src-telegram-soft:rgba(134,182,216,.14);
+  --r-chip:6px; --r-btn:8px; --r-card:10px; --r-panel:14px;
+  --font-ui:'Public Sans',system-ui,sans-serif;
+  --font-head:'Public Sans',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+  --head-weight:700; --head-tracking:-0.012em;
+}
+
+/* ---------- WARM PAPER — light ---------- */
+[data-direction="paper"][data-theme="light"] {
+  --bg:#F7F4EE; --surface:#FFFEFB; --surface-2:#F3EFE6; --surface-3:#ECE6D9;
+  --border:#E8E1D3; --border-strong:#D8CFBC;
+  --text:#211F1A; --text-2:#5C564B; --text-3:#938B7C;
+  --accent:#3C5777; --accent-hover:#2F4761; --accent-soft:#E8EBF0; --accent-ring:rgba(60,87,119,.36); --accent-fg:#FFFFFF;
+  --success:#2E7D58; --success-soft:#E4EFE9;
+  --warning:#8A6A1E; --warning-soft:#F3EBD6;
+  --danger:#B04242; --danger-soft:#F4E3E2;
+  --info:#355C86; --info-soft:#E7EDF4;
+  --shadow-1:0 1px 2px rgba(60,48,28,.05),0 1px 3px rgba(60,48,28,.05);
+  --shadow-2:0 6px 16px rgba(60,48,28,.08);
+  --shadow-3:0 18px 44px rgba(60,48,28,.14);
+  --skeleton:#ECE7DC; --skeleton-sheen:#F6F2EA; --overlay:rgba(40,32,20,.34);
+  --src-email:#5A6675; --src-email-soft:#EDF0F4;
+  --src-slack:#7A5C86; --src-slack-soft:#F0EAF3;
+  --src-telegram:#3E7CA8; --src-telegram-soft:#E7F0F6;
+  --r-chip:8px; --r-btn:10px; --r-card:14px; --r-panel:18px;
+  --font-ui:'Public Sans',system-ui,sans-serif;
+  --font-head:'Newsreader',Georgia,serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+  --head-weight:600; --head-tracking:0em;
+}
+
+/* ---------- WARM PAPER — dark ---------- */
+[data-direction="paper"][data-theme="dark"] {
+  --bg:#16130D; --surface:#1E1A12; --surface-2:#262117; --surface-3:#2F2A1E;
+  --border:#332D20; --border-strong:#41392A;
+  --text:#F0EBE0; --text-2:#B7AE9C; --text-3:#7C7565;
+  --accent:#9FB6D2; --accent-hover:#B4C6DD; --accent-soft:rgba(159,182,210,.15); --accent-ring:rgba(159,182,210,.50); --accent-fg:#16130D;
+  --success:#6FB894; --success-soft:rgba(111,184,148,.15);
+  --warning:#D9B45A; --warning-soft:rgba(217,180,90,.15);
+  --danger:#E08585; --danger-soft:rgba(224,133,133,.16);
+  --info:#84A9D6; --info-soft:rgba(132,169,214,.16);
+  --shadow-1:0 1px 2px rgba(0,0,0,.42);
+  --shadow-2:0 8px 22px rgba(0,0,0,.48);
+  --shadow-3:0 22px 50px rgba(0,0,0,.58);
+  --skeleton:#262117; --skeleton-sheen:#312B1F; --overlay:rgba(10,8,4,.60);
+  --src-email:#A2B2C4; --src-email-soft:rgba(162,178,196,.14);
+  --src-slack:#C0A6CC; --src-slack-soft:rgba(192,166,204,.14);
+  --src-telegram:#86B6D8; --src-telegram-soft:rgba(134,182,216,.14);
+  --r-chip:8px; --r-btn:10px; --r-card:14px; --r-panel:18px;
+  --font-ui:'Public Sans',system-ui,sans-serif;
+  --font-head:'Newsreader',Georgia,serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+  --head-weight:600; --head-tracking:0em;
+}
+
+/* ---------- GRAPHITE — light ---------- */
+[data-direction="graphite"][data-theme="light"] {
+  --bg:#F4F4F6; --surface:#FFFFFF; --surface-2:#EFEFF2; --surface-3:#E7E7EB;
+  --border:#E4E4E9; --border-strong:#D2D2D9;
+  --text:#17191D; --text-2:#51545B; --text-3:#8A8D95;
+  --accent:#36506E; --accent-hover:#2A405A; --accent-soft:#EAECEF; --accent-ring:rgba(54,80,110,.36); --accent-fg:#FFFFFF;
+  --success:#2E7D58; --success-soft:#E4EFE9;
+  --warning:#8A6A1E; --warning-soft:#F3EBD6;
+  --danger:#B04242; --danger-soft:#F4E3E2;
+  --info:#355C86; --info-soft:#E7EDF4;
+  --shadow-1:0 1px 2px rgba(20,22,28,.05);
+  --shadow-2:0 4px 12px rgba(20,22,28,.07);
+  --shadow-3:0 16px 40px rgba(20,22,28,.12);
+  --skeleton:#EAEAEE; --skeleton-sheen:#F4F4F7; --overlay:rgba(18,20,24,.36);
+  --src-email:#5A6675; --src-email-soft:#EDF0F4;
+  --src-slack:#7A5C86; --src-slack-soft:#F0EAF3;
+  --src-telegram:#3E7CA8; --src-telegram-soft:#E7F0F6;
+  --r-chip:4px; --r-btn:6px; --r-card:6px; --r-panel:8px;
+  --font-ui:'Public Sans',system-ui,sans-serif;
+  --font-head:'Public Sans',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+  --head-weight:700; --head-tracking:-0.02em;
+}
+
+/* ---------- GRAPHITE — dark ---------- */
+[data-direction="graphite"][data-theme="dark"] {
+  --bg:#0E0F12; --surface:#15171B; --surface-2:#1C1F24; --surface-3:#23272D;
+  --border:#26292F; --border-strong:#343A42;
+  --text:#ECEDEF; --text-2:#A7ABB3; --text-3:#6C7178;
+  --accent:#8AA6C6; --accent-hover:#A1B8D2; --accent-soft:rgba(138,166,198,.15); --accent-ring:rgba(138,166,198,.50); --accent-fg:#0E0F12;
+  --success:#6FB894; --success-soft:rgba(111,184,148,.15);
+  --warning:#D9B45A; --warning-soft:rgba(217,180,90,.15);
+  --danger:#E08585; --danger-soft:rgba(224,133,133,.16);
+  --info:#84A9D6; --info-soft:rgba(132,169,214,.16);
+  --shadow-1:0 1px 2px rgba(0,0,0,.50);
+  --shadow-2:0 6px 16px rgba(0,0,0,.55);
+  --shadow-3:0 18px 44px rgba(0,0,0,.62);
+  --skeleton:#1C1F24; --skeleton-sheen:#262A30; --overlay:rgba(2,3,5,.62);
+  --src-email:#A2B2C4; --src-email-soft:rgba(162,178,196,.14);
+  --src-slack:#C0A6CC; --src-slack-soft:rgba(192,166,204,.14);
+  --src-telegram:#86B6D8; --src-telegram-soft:rgba(134,182,216,.14);
+  --r-chip:4px; --r-btn:6px; --r-card:6px; --r-panel:8px;
+  --font-ui:'Public Sans',system-ui,sans-serif;
+  --font-head:'Public Sans',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+  --head-weight:700; --head-tracking:-0.02em;
+}
+
+/* Auto dark via OS preference when no explicit data-theme is set */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --bg:#0F1722; --surface:#161F2C; --surface-2:#1D2836; --surface-3:#243140;
+    --border:#273341; --border-strong:#33424F;
+    --text:#E9EDF2; --text-2:#AAB6C4; --text-3:#6F7C8C;
+    --accent:#7FA2CC; --accent-hover:#97B4D9; --accent-soft:rgba(127,162,204,.16); --accent-ring:rgba(127,162,204,.50); --accent-fg:#0F1722;
+    --success:#6FB894; --success-soft:rgba(111,184,148,.15);
+    --warning:#D9B45A; --warning-soft:rgba(217,180,90,.15);
+    --danger:#E08585; --danger-soft:rgba(224,133,133,.16);
+    --skeleton:#1E2937; --skeleton-sheen:#283545; --overlay:rgba(5,9,14,.60);
+    --shadow-1:0 1px 2px rgba(0,0,0,.40); --shadow-2:0 8px 22px rgba(0,0,0,.45); --shadow-3:0 22px 50px rgba(0,0,0,.55);
+  }
+}
+
+/* Spacing scale (4px base): 4 8 12 16 20 24 32 40
+   Use directly or via your framework's spacing utilities. */
+
+/* Honor reduced motion everywhere */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important; }
+}

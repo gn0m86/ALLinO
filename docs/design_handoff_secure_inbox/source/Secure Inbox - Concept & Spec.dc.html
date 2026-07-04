@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#2F4A6B"/><g transform="translate(30 26)" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 0l20 7v14c0 12-8.5 20.5-20 27C8.5 41.5 0 33 0 21V7z"/><path d="M9 22l8 8 15-16"/></g></svg></template>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:#F4F6F9;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+    :root{
+      --bg:#F4F6F9;--surface:#FFFFFF;--surface-2:#F0F3F7;--surface-3:#E7ECF2;--border:#E4E8EF;--border-strong:#D2D9E2;
+      --text:#172230;--text-2:#525F6F;--text-3:#8A95A4;
+      --accent:#2F4A6B;--accent-hover:#243B57;--accent-soft:#E8EDF4;--accent-ring:rgba(47,74,107,.40);--accent-fg:#FFFFFF;
+      --success:#2E7D58;--success-soft:#E4EFE9;--warning:#8A6A1E;--warning-soft:#F3EBD6;--danger:#B04242;--danger-soft:#F4E3E2;--info:#355C86;--info-soft:#E7EDF4;
+      --shadow-1:0 1px 2px rgba(17,26,39,.04),0 1px 3px rgba(17,26,39,.05);--shadow-2:0 6px 16px rgba(17,26,39,.08);--shadow-3:0 18px 44px rgba(17,26,39,.14);
+      --skeleton:#E9EDF2;--skeleton-sheen:#F5F7FA;--overlay:rgba(20,28,40,.34);
+      --r-chip:6px;--r-btn:8px;--r-card:10px;--r-panel:14px;
+      --font-ui:'Public Sans',system-ui,sans-serif;--font-head:'Public Sans',system-ui,sans-serif;--font-mono:'IBM Plex Mono',ui-monospace,monospace;
+      --head-weight:700;--head-tracking:-0.012em;--item-pad:15px 16px;
+    }
+    @keyframes om-shimmer{100%{background-position:-200% 0}}
+    @keyframes om-spin{to{transform:rotate(360deg)}}
+    @keyframes om-fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+    ::selection{background:rgba(47,74,107,.18)}
+    @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+  </style>
+</helmet>
+
+<div style="{{ themeVars }}">
+
+  <header style="position:sticky;top:0;z-index:50;background:var(--surface);border-bottom:1px solid var(--border);backdrop-filter:saturate(1.1)">
+    <div style="max-width:1240px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:18px">
+      <div style="display:flex;align-items:center;gap:11px;min-width:0">
+        <span style="display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--accent);color:var(--accent-fg);flex:none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l7 2.5v5c0 4.3-3 7.2-7 9.4-4-2.2-7-5.1-7-9.4v-5z"></path><path d="M9 11.8l2.1 2.1 4-4.3"></path></svg>
+        </span>
+        <span style="display:flex;flex-direction:column;line-height:1.1;min-width:0">
+          <span style="font-family:var(--font-head);font-weight:700;font-size:15px;letter-spacing:-.01em;color:var(--text)">Secure&nbsp;Inbox</span>
+          <span style="font-family:var(--font-mono);font-size:10.5px;letter-spacing:.04em;color:var(--text-3);text-transform:uppercase">Concept · UI&nbsp;Spec</span>
+        </span>
+      </div>
+
+      <nav aria-label="Sections" style="display:flex;gap:2px;margin-left:6px;flex:1;min-width:0;overflow:hidden">
+        <a href="#concept" style="font-size:13px;color:var(--text-2);text-decoration:none;padding:6px 10px;border-radius:var(--r-chip);white-space:nowrap" style-hover="background:var(--surface-2);color:var(--text)">Concept</a>
+        <a href="#tokens" style="font-size:13px;color:var(--text-2);text-decoration:none;padding:6px 10px;border-radius:var(--r-chip);white-space:nowrap" style-hover="background:var(--surface-2);color:var(--text)">Tokens</a>
+        <a href="#components" style="font-size:13px;color:var(--text-2);text-decoration:none;padding:6px 10px;border-radius:var(--r-chip);white-space:nowrap" style-hover="background:var(--surface-2);color:var(--text)">Components</a>
+        <a href="#states" style="font-size:13px;color:var(--text-2);text-decoration:none;padding:6px 10px;border-radius:var(--r-chip);white-space:nowrap" style-hover="background:var(--surface-2);color:var(--text)">States</a>
+        <a href="#responsive" style="font-size:13px;color:var(--text-2);text-decoration:none;padding:6px 10px;border-radius:var(--r-chip);white-space:nowrap" style-hover="background:var(--surface-2);color:var(--text)">Responsive</a>
+        <a href="#a11y" style="font-size:13px;color:var(--text-2);text-decoration:none;padding:6px 10px;border-radius:var(--r-chip);white-space:nowrap" style-hover="background:var(--surface-2);color:var(--text)">Accessibility</a>
+        <a href="#code" style="font-size:13px;color:var(--text-2);text-decoration:none;padding:6px 10px;border-radius:var(--r-chip);white-space:nowrap" style-hover="background:var(--surface-2);color:var(--text)">Code</a>
+      </nav>
+
+      <div role="group" aria-label="Visual direction" style="display:flex;gap:3px;padding:3px;background:var(--surface-2);border-radius:10px;flex:none">
+        <sc-for list="{{ directions }}" as="d" hint-placeholder-count="3">
+          <button type="button" onClick="{{ d.onSelect }}" aria-pressed="{{ d.active }}" title="{{ d.label }}" style="font-family:var(--font-ui);font-size:12.5px;font-weight:{{ d.fw }};color:{{ d.fg }};background:{{ d.bg }};box-shadow:{{ d.sh }};border:0;padding:6px 11px;border-radius:7px;cursor:pointer;white-space:nowrap">{{ d.label }}</button>
+        </sc-for>
+      </div>
+
+      <button type="button" onClick="{{ toggleMode }}" aria-label="Toggle light or dark theme" style="display:grid;place-items:center;width:34px;height:34px;border-radius:var(--r-btn);border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;flex:none" style-hover="background:var(--surface-2);color:var(--text)">
+        <sc-if value="{{ isDark }}" hint-placeholder-val="{{ false }}">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.2A8 8 0 0 1 9.6 3.9 8 8 0 1 0 20 14.2z"></path></svg>
+        </sc-if>
+        <sc-if value="{{ isLight }}" hint-placeholder-val="{{ true }}">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.6a4.4 4.4 0 1 0 0 8.8 4.4 4.4 0 0 0 0-8.8z"></path><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"></path></svg>
+        </sc-if>
+      </button>
+
+      <button type="button" onClick="{{ openPalette }}" aria-label="Open command palette" style="display:flex;align-items:center;gap:8px;height:34px;padding:0 11px;border-radius:var(--r-btn);border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;flex:none" style-hover="background:var(--surface-2);color:var(--text)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"></path><path d="M16.5 16.5 21 21"></path></svg>
+        <span style="font-family:var(--font-mono);font-size:11px;letter-spacing:.02em;padding:2px 6px;border-radius:5px;background:var(--surface-3);color:var(--text-2)">⌘K</span>
+      </button>
+    </div>
+  </header>
+
+  <main style="max-width:1240px;margin:0 auto;padding:0 24px 110px">
+
+    <section id="concept" style="padding:54px 0 8px">
+      <div style="font-family:var(--font-mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:16px">Design concept · UI specification</div>
+      <h1 style="font-family:var(--font-head);font-weight:var(--head-weight);letter-spacing:var(--head-tracking);font-size:clamp(30px,4.4vw,46px);line-height:1.06;margin:0;max-width:18ch;color:var(--text);text-wrap:balance">A calm home for every conversation.</h1>
+      <p style="font-size:17px;line-height:1.55;color:var(--text-2);max-width:60ch;margin:18px 0 0">One secure, unified inbox for Email, Slack, and Telegram. Quiet by design, legible under pressure, and privacy-first — it never asks for more than the moment needs.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:24px">
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-2);background:var(--surface);border:1px solid var(--border);padding:6px 11px;border-radius:999px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"></path></svg>WCAG AA contrast
+        </span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-2);background:var(--surface);border:1px solid var(--border);padding:6px 11px;border-radius:999px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11h12v9H6z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></svg>Privacy-first defaults
+        </span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-2);background:var(--surface);border:1px solid var(--border);padding:6px 11px;border-radius:999px">3 directions · light + dark</span>
+      </div>
+    </section>
+
+    <section aria-label="Inbox concept screen" style="margin-top:30px;position:relative">
+      <div style="border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:var(--shadow-2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:14px;padding:11px 16px;border-bottom:1px solid var(--border);background:var(--surface-2)">
+          <div style="display:flex;gap:7px">
+            <span style="width:11px;height:11px;border-radius:50%;background:var(--border-strong)"></span>
+            <span style="width:11px;height:11px;border-radius:50%;background:var(--border-strong)"></span>
+            <span style="width:11px;height:11px;border-radius:50%;background:var(--border-strong)"></span>
+          </div>
+          <div style="flex:1;display:flex;justify-content:center">
+            <span style="display:inline-flex;align-items:center;gap:7px;font-family:var(--font-mono);font-size:11.5px;color:var(--text-3);background:var(--surface);border:1px solid var(--border);padding:4px 12px;border-radius:999px">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11h12v9H6z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></svg>
+              inbox.local · on-device
+            </span>
+          </div>
+          <span style="width:54px"></span>
+        </div>
+
+        <div style="overflow-x:auto">
+        <div style="display:flex;min-width:1000px;height:660px">
+
+          <aside style="width:218px;flex:none;border-right:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;padding:16px 12px">
+            <div style="display:flex;align-items:center;gap:9px;padding:4px 8px 14px">
+              <span style="display:grid;place-items:center;width:26px;height:26px;border-radius:8px;background:var(--accent);color:var(--accent-fg)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l7 2.5v5c0 4.3-3 7.2-7 9.4-4-2.2-7-5.1-7-9.4v-5z"></path></svg></span>
+              <span style="font-family:var(--font-head);font-weight:700;font-size:14.5px;letter-spacing:-.01em;color:var(--text)">Secure Inbox</span>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:1px">
+              <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r-btn);background:var(--accent-soft);color:var(--accent);font-weight:600;font-size:13.5px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12.5 6 5.5h12l2.5 7v6h-17z"></path><path d="M3.5 12.5H9l1.2 2.3h3.6L15 12.5h5.5"></path></svg>
+                <span style="flex:1">Inbox</span>
+                <span style="font-family:var(--font-mono);font-size:11px;background:var(--accent);color:var(--accent-fg);padding:1px 7px;border-radius:999px">7</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r-btn);color:var(--text-2);font-size:13.5px" style-hover="background:var(--surface-2);color:var(--text)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.4 5 5.6.8-4 4 1 5.6L12 17l-5 2.4 1-5.6-4-4 5.6-.8z"></path></svg>
+                <span style="flex:1">Starred</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r-btn);color:var(--text-2);font-size:13.5px" style-hover="background:var(--surface-2);color:var(--text)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"></path><path d="M12 8v4.2l3 1.8"></path></svg>
+                <span style="flex:1">Snoozed</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r-btn);color:var(--text-2);font-size:13.5px" style-hover="background:var(--surface-2);color:var(--text)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5h17v3h-17z"></path><path d="M5 9.5v9h14v-9"></path><path d="M9.5 13h5"></path></svg>
+                <span style="flex:1">Archive</span>
+              </div>
+            </div>
+
+            <div style="font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);padding:18px 10px 8px">Sources</div>
+            <div style="display:flex;flex-direction:column;gap:1px">
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-btn);color:var(--text-2);font-size:13.5px" style-hover="background:var(--surface-2);color:var(--text)">
+                <span style="display:grid;place-items:center;width:20px;height:20px;border-radius:6px;background:rgba(90,102,117,.12);color:var(--text-2)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5h17v11h-17z"></path><path d="M3.8 7l8.2 6 8.2-6"></path></svg></span>
+                <span style="flex:1">Email</span><span style="font-size:12px;color:var(--text-3)">3</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-btn);color:var(--text-2);font-size:13.5px" style-hover="background:var(--surface-2);color:var(--text)">
+                <span style="display:grid;place-items:center;width:20px;height:20px;border-radius:6px;background:rgba(122,92,134,.14);color:#7A5C86"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 7.5 20M16.5 4 15 20M5 9h14M4 15h14"></path></svg></span>
+                <span style="flex:1">Slack</span><span style="font-size:12px;color:var(--text-3)">2</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-btn);color:var(--text-2);font-size:13.5px" style-hover="background:var(--surface-2);color:var(--text)">
+                <span style="display:grid;place-items:center;width:20px;height:20px;border-radius:6px;background:rgba(62,124,168,.14);color:#3E7CA8"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4 11 15"></path><path d="M22 4 15 21l-4-6-6-4z"></path></svg></span>
+                <span style="flex:1">Telegram</span><span style="font-size:12px;color:var(--text-3)">2</span>
+              </div>
+            </div>
+
+            <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--r-card);background:var(--surface-2);border:1px solid var(--border)">
+              <span style="display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--surface-3);color:var(--text-2);font-size:12px;font-weight:600">YO</span>
+              <span style="display:flex;flex-direction:column;line-height:1.2;min-width:0">
+                <span style="font-size:12.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">You</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--success)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11h12v9H6z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></svg>Encrypted</span>
+              </span>
+            </div>
+          </aside>
+
+          <section style="width:382px;flex:none;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--surface)">
+            <div style="display:flex;align-items:center;gap:10px;padding:16px 18px 13px">
+              <h2 style="font-family:var(--font-head);font-weight:var(--head-weight);letter-spacing:var(--head-tracking);font-size:19px;margin:0;color:var(--text)">Inbox</h2>
+              <span style="font-size:12px;color:var(--text-3);font-family:var(--font-mono)">7 unread</span>
+              <span style="flex:1"></span>
+              <button type="button" aria-label="Search inbox" style="display:grid;place-items:center;width:30px;height:30px;border-radius:var(--r-btn);border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer" style-hover="background:var(--surface-2);color:var(--text)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"></path><path d="M16.5 16.5 21 21"></path></svg></button>
+              <button type="button" aria-label="Filter inbox" style="display:grid;place-items:center;width:30px;height:30px;border-radius:var(--r-btn);border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer" style-hover="background:var(--surface-2);color:var(--text)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"></path></svg></button>
+            </div>
+
+            <div role="list" style="flex:1;overflow-y:auto;padding:0 8px 10px">
+              <sc-for list="{{ inbox }}" as="item" hint-placeholder-count="6">
+                <button type="button" role="listitem" onClick="{{ item.onOpen }}" aria-label="{{ item.aria }}" style="position:relative;display:flex;gap:12px;width:100%;text-align:left;border:0;cursor:pointer;border-radius:var(--r-card);padding:var(--item-pad);background:{{ item.rowBg }};font-family:var(--font-ui)" style-hover="background:var(--surface-2)">
+                  <span style="position:absolute;left:0;top:11px;bottom:11px;width:3px;border-radius:0 3px 3px 0;background:{{ item.barColor }}"></span>
+                  <span style="position:relative;flex:none">
+                    <span style="display:grid;place-items:center;width:38px;height:38px;border-radius:var(--r-card);background:var(--surface-3);color:var(--text-2);font-size:13px;font-weight:600">{{ item.initials }}</span>
+                    <span style="position:absolute;right:-3px;bottom:-3px;display:grid;place-items:center;width:17px;height:17px;border-radius:6px;border:2px solid var(--surface);background:{{ item.sourceSoft }};color:{{ item.sourceColor }}"><svg width="9.5" height="9.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="{{ item.sourceIconPath }}"></path></svg></span>
+                  </span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                    <span style="display:flex;align-items:baseline;gap:8px">
+                      <span style="font-size:14px;font-weight:{{ item.senderWeight }};color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ item.sender }}</span>
+                      <span style="flex:1"></span>
+                      <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3);white-space:nowrap">{{ item.time }}</span>
+                      <sc-if value="{{ item.unread }}" hint-placeholder-val="{{ false }}"><span style="width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none"></span></sc-if>
+                    </span>
+                    <span style="display:flex;align-items:center;gap:7px;min-width:0">
+                      <sc-if value="{{ item.channel }}" hint-placeholder-val="{{ false }}"><span style="font-family:var(--font-mono);font-size:11px;color:{{ item.sourceColor }};background:{{ item.sourceSoft }};padding:1px 6px;border-radius:5px;white-space:nowrap">{{ item.channel }}</span></sc-if>
+                      <span style="font-size:14px;font-weight:{{ item.subjWeight }};color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ item.subject }}</span>
+                    </span>
+                    <span style="display:flex;align-items:center;gap:8px;min-width:0">
+                      <sc-if value="{{ item.redacted }}" hint-placeholder-val="{{ false }}"><span style="color:var(--text-3);flex:none;display:inline-flex"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l16 16"></path><path d="M9.8 5.2A10 10 0 0 1 12 5c6 0 9.5 7 9.5 7a17 17 0 0 1-3.2 3.8M6.3 7.6A17 17 0 0 0 2.5 12s3.5 7 9.5 7a10 10 0 0 0 3.2-.5"></path></svg></span></sc-if>
+                      <span style="flex:1;font-size:13px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ item.snippet }}</span>
+                      <sc-if value="{{ item.attachment }}" hint-placeholder-val="{{ false }}"><span style="color:var(--text-3);flex:none;display:inline-flex"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5 12 19.5a4.2 4.2 0 0 1-6-6l8-8a2.8 2.8 0 0 1 4 4l-8 8a1.4 1.4 0 0 1-2-2l7.2-7.2"></path></svg></span></sc-if>
+                      <sc-if value="{{ item.prioPill }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;flex:none;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.02em;color:{{ item.prioColor }};background:{{ item.prioSoft }};padding:2px 7px;border-radius:999px"><span style="width:5px;height:5px;border-radius:50%;background:{{ item.prioColor }}"></span>{{ item.prioLabel }}</span></sc-if>
+                    </span>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+          </section>
+
+          <section style="flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg)">
+            <div style="display:flex;align-items:center;gap:12px;padding:15px 22px;border-bottom:1px solid var(--border);background:var(--surface)">
+              <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:var(--r-card);background:rgba(122,92,134,.14);color:#7A5C86;flex:none"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 7.5 20M16.5 4 15 20M5 9h14M4 15h14"></path></svg></span>
+              <span style="min-width:0;flex:1">
+                <span style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--font-head);font-weight:var(--head-weight);letter-spacing:var(--head-tracking);font-size:16.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Elevated error rate on the gateway</span></span>
+                <span style="display:block;font-size:12px;color:var(--text-3);margin-top:1px"><span style="font-family:var(--font-mono)">#incident-response</span> · 3 people · Slack</span>
+              </span>
+              <button type="button" aria-label="Snooze" style="display:grid;place-items:center;width:32px;height:32px;border-radius:var(--r-btn);border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer" style-hover="background:var(--surface-2);color:var(--text)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"></path><path d="M12 8v4.2l3 1.8"></path></svg></button>
+              <button type="button" aria-label="Archive" style="display:grid;place-items:center;width:32px;height:32px;border-radius:var(--r-btn);border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer" style-hover="background:var(--surface-2);color:var(--text)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5h17v3h-17z"></path><path d="M5 9.5v9h14v-9"></path><path d="M9.5 13h5"></path></svg></button>
+              <button type="button" aria-label="More actions" style="display:grid;place-items:center;width:32px;height:32px;border-radius:var(--r-btn);border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer" style-hover="background:var(--surface-2);color:var(--text)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h.01M12 12h.01M18 12h.01"></path></svg></button>
+            </div>
+
+            <div style="flex:1;overflow-y:auto;padding:18px 22px">
+
+              <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);box-shadow:var(--shadow-1);overflow:hidden;margin-bottom:20px">
+                <div style="display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--border)">
+                  <span style="display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--success-soft);color:var(--success)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l7 2.5v5c0 4.3-3 7.2-7 9.4-4-2.2-7-5.1-7-9.4v-5z"></path><path d="M9 11.8l2.1 2.1 4-4.3"></path></svg></span>
+                  <span style="font-weight:600;font-size:13.5px;color:var(--text)">Conversation secured</span>
+                  <span style="flex:1"></span>
+                  <span style="font-family:var(--font-mono);font-size:10.5px;color:#7A5C86;background:rgba(122,92,134,.12);padding:3px 8px;border-radius:999px">Slack · workspace</span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr">
+                  <div style="display:flex;gap:9px;padding:11px 14px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)">
+                    <span style="color:var(--text-3);flex:none;margin-top:1px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11h12v9H6z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></svg></span>
+                    <span><span style="display:block;font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)">Transport</span><span style="display:block;font-size:12.5px;color:var(--text);margin-top:2px">TLS 1.3 · in transit</span></span>
+                  </div>
+                  <div style="display:flex;gap:9px;padding:11px 14px;border-bottom:1px solid var(--border)">
+                    <span style="color:var(--text-3);flex:none;margin-top:1px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.4l2 1.5 2.5-.2.8 2.4 2.1 1.4-.9 2.3.9 2.3-2.1 1.4-.8 2.4-2.5-.2L12 20.6l-2-1.5-2.5.2-.8-2.4-2.1-1.4.9-2.3-.9-2.3 2.1-1.4.8-2.4 2.5.2z"></path><path d="M9.2 12l1.9 1.9 3.7-3.8"></path></svg></span>
+                    <span><span style="display:block;font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)">Identity</span><span style="display:block;font-size:12.5px;color:var(--text);margin-top:2px">SSO · members verified</span></span>
+                  </div>
+                  <div style="display:flex;gap:9px;padding:11px 14px;border-right:1px solid var(--border)">
+                    <span style="color:var(--text-3);flex:none;margin-top:1px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l7 2.5v5c0 4.3-3 7.2-7 9.4-4-2.2-7-5.1-7-9.4v-5z"></path></svg></span>
+                    <span><span style="display:block;font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)">Content</span><span style="display:block;font-size:12.5px;color:var(--text);margin-top:2px">Remote media blocked</span></span>
+                  </div>
+                  <div style="display:flex;gap:9px;padding:11px 14px">
+                    <span style="color:var(--text-3);flex:none;margin-top:1px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"></path><path d="M12 8v4.2l3 1.8"></path></svg></span>
+                    <span><span style="display:block;font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)">Retention</span><span style="display:block;font-size:12.5px;color:var(--text);margin-top:2px">Auto-deletes in 30 days</span></span>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--surface-2)">
+                  <span style="font-size:12px;color:var(--text-2)">Previews stay on your device. No read receipts are sent.</span>
+                  <span style="flex:1"></span>
+                  <a href="#a11y" style="font-size:12px;font-weight:600;color:var(--accent);text-decoration:none">Privacy details ›</a>
+                </div>
+              </div>
+
+              <sc-for list="{{ thread.messages }}" as="m" hint-placeholder-count="4">
+                <div style="display:flex;gap:12px;padding:10px 0">
+                  <span style="display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:{{ m.avatarBg }};color:{{ m.avatarFg }};font-size:12px;font-weight:600;flex:none">{{ m.initials }}</span>
+                  <div style="min-width:0;flex:1">
+                    <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:13.5px;font-weight:600;color:{{ m.nameColor }}">{{ m.who }}</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3)">{{ m.time }}</span></div>
+                    <p style="margin:4px 0 0;font-size:14px;line-height:1.55;color:var(--text-2);max-width:62ch">{{ m.body }}</p>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="padding:14px 22px 18px;border-top:1px solid var(--border);background:var(--surface)">
+              <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:11px 13px;display:flex;flex-direction:column;gap:10px">
+                <span style="font-size:13.5px;color:var(--text-3)">Reply securely…</span>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <button type="button" aria-label="Attach file" style="display:grid;place-items:center;width:30px;height:30px;border-radius:var(--r-btn);border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer" style-hover="background:var(--surface-2);color:var(--text)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5 12 19.5a4.2 4.2 0 0 1-6-6l8-8a2.8 2.8 0 0 1 4 4l-8 8a1.4 1.4 0 0 1-2-2l7.2-7.2"></path></svg></button>
+                  <span style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text-3)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11h12v9H6z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></svg>End-to-end encrypted</span>
+                  <span style="flex:1"></span>
+                  <button type="button" style="display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 15px;border-radius:var(--r-btn);border:0;background:var(--accent);color:var(--accent-fg);font-family:var(--font-ui);font-size:13px;font-weight:600;cursor:pointer" style-hover="background:var(--accent-hover)">Send <span style="font-family:var(--font-mono);font-size:10.5px;opacity:.8">⌘↵</span></button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+        </div>
+      </div>
+
+      <sc-if value="{{ paletteOpen }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ closePalette }}" style="position:absolute;inset:0;background:var(--overlay);display:flex;justify-content:center;align-items:flex-start;padding-top:74px;z-index:20;border-radius:16px">
+          <div onClick="{{ stop }}" role="dialog" aria-label="Command palette" style="width:min(560px,92%);background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--r-panel);box-shadow:var(--shadow-3);overflow:hidden;animation:om-fade .14s ease">
+            <div style="display:flex;align-items:center;gap:11px;padding:14px 16px;border-bottom:1px solid var(--border)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"></path><path d="M16.5 16.5 21 21"></path></svg>
+              <span style="flex:1;font-size:15px;color:var(--text-3)">Search or run a command…</span>
+              <span style="font-family:var(--font-mono);font-size:11px;padding:3px 7px;border-radius:5px;background:var(--surface-3);color:var(--text-2)">esc</span>
+            </div>
+            <div style="max-height:340px;overflow-y:auto;padding:8px">
+              <sc-for list="{{ commands }}" as="g" hint-placeholder-count="3">
+                <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);padding:10px 10px 5px">{{ g.group }}</div>
+                <sc-for list="{{ g.items }}" as="c" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:var(--r-btn);background:{{ c.rowBg }};cursor:pointer" style-hover="background:var(--surface-2)">
+                    <span style="display:grid;place-items:center;width:26px;height:26px;border-radius:7px;background:var(--surface-2);color:{{ c.iconColor }};flex:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ c.iconPath }}"></path></svg></span>
+                    <span style="flex:1;font-size:13.5px;color:{{ c.labelColor }}">{{ c.label }}</span>
+                    <sc-if value="{{ c.scopeChip }}" hint-placeholder-val="{{ false }}"><span style="font-family:var(--font-mono);font-size:10px;color:var(--text-3);border:1px solid var(--border);padding:2px 7px;border-radius:999px">{{ c.scopeChip }}</span></sc-if>
+                    <sc-if value="{{ c.hint }}" hint-placeholder-val="{{ false }}"><span style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-3);background:var(--surface-3);padding:2px 7px;border-radius:5px">{{ c.hint }}</span></sc-if>
+                  </div>
+                </sc-for>
+              </sc-for>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:10px 16px;border-top:1px solid var(--border);background:var(--surface-2);font-family:var(--font-mono);font-size:11px;color:var(--text-3)">
+              <span>↑↓ navigate</span><span>↵ select</span><span style="flex:1"></span>
+              <span style="display:inline-flex;align-items:center;gap:5px;color:var(--success)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11h12v9H6z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></svg>Runs on-device</span>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </section>
+
+    <!-- ============ TOKENS ============ -->
+    <section id="tokens" style="padding:56px 0 0;scroll-margin-top:72px">
+      <div style="display:flex;align-items:flex-end;gap:14px;border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:26px">
+        <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent);background:var(--accent-soft);padding:3px 9px;border-radius:var(--r-chip)">01</span>
+        <h2 style="font-family:var(--font-head);font-weight:var(--head-weight);letter-spacing:var(--head-tracking);font-size:26px;margin:0;color:var(--text)">Design tokens</h2>
+        <span style="flex:1"></span>
+        <span style="font-size:13px;color:var(--text-3);max-width:42ch;text-align:right">Every value below is a live CSS variable — switch direction or theme above and the whole spec re-derives.</span>
+      </div>
+
+      <!-- color -->
+      <h3 style="font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 0 14px">Color</h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:38px">
+        <sc-for list="{{ swatchGroups }}" as="g" hint-placeholder-count="4">
+          <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);overflow:hidden">
+            <div style="font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);padding:10px 12px;border-bottom:1px solid var(--border)">{{ g.group }}</div>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ g.sw }}" as="s" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:11px;padding:9px 12px">
+                  <span style="width:30px;height:30px;border-radius:7px;background:{{ s.val }};border:1px solid var(--border-strong);flex:none"></span>
+                  <span style="min-width:0;flex:1">
+                    <span style="display:block;font-family:var(--font-mono);font-size:11.5px;color:var(--text)">--{{ s.name }}</span>
+                    <span style="display:block;font-size:11px;color:var(--text-3)">{{ s.note }}</span>
+                  </span>
+                  <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-3);text-transform:uppercase">{{ s.val }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- typography -->
+      <h3 style="font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 0 14px">Typography</h3>
+      <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);overflow:hidden;margin-bottom:18px">
+        <sc-for list="{{ typeScale }}" as="t" hint-placeholder-count="7">
+          <div style="display:flex;align-items:center;gap:20px;padding:13px 18px;border-bottom:1px solid var(--border)">
+            <span style="width:160px;flex:none">
+              <span style="display:block;font-size:13px;font-weight:600;color:var(--text)">{{ t.name }}</span>
+              <span style="display:block;font-family:var(--font-mono);font-size:10.5px;color:var(--text-3)">{{ t.px }}px · {{ t.weight }} · lh {{ t.lh }}</span>
+            </span>
+            <span style="flex:1;min-width:0;font-family:{{ t.family }};font-size:{{ t.px }}px;font-weight:{{ t.weight }};letter-spacing:{{ t.tracking }};color:var(--text);line-height:{{ t.lh }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.sample }}</span>
+          </div>
+        </sc-for>
+        <div style="display:flex;gap:28px;flex-wrap:wrap;padding:14px 18px;background:var(--surface-2)">
+          <span style="font-size:12px;color:var(--text-2)"><span style="color:var(--text-3)">UI / head:</span> Public Sans</span>
+          <span style="font-size:12px;color:var(--text-2)"><span style="color:var(--text-3)">Serif (Warm Paper heads):</span> Newsreader</span>
+          <span style="font-size:12px;color:var(--text-2)"><span style="color:var(--text-3)">Technical labels:</span> IBM Plex Mono</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.3fr 1fr 1.4fr;gap:16px;margin-top:24px">
+        <!-- spacing -->
+        <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:16px 18px">
+          <h3 style="font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 0 14px">Spacing · 4px base</h3>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <sc-for list="{{ spacing }}" as="s" hint-placeholder-count="8">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3);width:54px">space-{{ s.name }}</span>
+                <span style="height:14px;width:{{ s.px }}px;background:var(--accent);border-radius:3px"></span>
+                <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-2)">{{ s.px }}px</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <!-- radius -->
+        <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:16px 18px">
+          <h3 style="font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 0 14px">Radius</h3>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <sc-for list="{{ radii }}" as="r" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="width:34px;height:34px;background:var(--surface-3);border:1px solid var(--border-strong);border-radius:{{ r.px }}px;flex:none"></span>
+                <span style="font-family:var(--font-mono);font-size:11.5px;color:var(--text);flex:1">--r-{{ r.name }}</span>
+                <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-2)">{{ r.px }}px</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <!-- shadow -->
+        <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:16px 18px">
+          <h3 style="font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 0 14px">Elevation</h3>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <sc-for list="{{ shadows }}" as="s" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:13px">
+                <span style="width:44px;height:34px;background:var(--surface);border-radius:8px;box-shadow:{{ s.val }};flex:none"></span>
+                <span style="min-width:0;flex:1"><span style="display:block;font-family:var(--font-mono);font-size:11.5px;color:var(--text)">--{{ s.name }}</span><span style="display:block;font-size:11px;color:var(--text-3)">{{ s.note }}</span></span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ COMPONENTS ============ -->
+    <section id="components" style="padding:56px 0 0;scroll-margin-top:72px">
+      <div style="display:flex;align-items:flex-end;gap:14px;border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:26px">
+        <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent);background:var(--accent-soft);padding:3px 9px;border-radius:var(--r-chip)">02</span>
+        <h2 style="font-family:var(--font-head);font-weight:var(--head-weight);letter-spacing:var(--head-tracking);font-size:26px;margin:0;color:var(--text)">Components</h2>
+        <span style="flex:1"></span>
+        <span style="font-size:13px;color:var(--text-3);max-width:42ch;text-align:right">Six core parts. Each is annotated with its anatomy and the tokens it consumes.</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+
+        <!-- Inbox item anatomy -->
+        <div style="grid-column:1 / -1;border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:20px 22px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><h3 style="font-size:15px;font-weight:600;color:var(--text);margin:0">Inbox item</h3><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3)">list · button</span></div>
+          <p style="font-size:13px;color:var(--text-2);margin:0 0 16px;max-width:70ch">One row carries six signals without crowding: sender, source, subject, snippet, time, and priority. Unread weight (700) and the accent dot do the loudest work; everything else stays quiet.</p>
+          <div style="position:relative;display:flex;gap:12px;border:1px dashed var(--border-strong);border-radius:var(--r-card);padding:15px 16px;background:var(--surface)">
+            <span style="position:absolute;left:0;top:11px;bottom:11px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)"></span>
+            <span style="position:relative;flex:none">
+              <span style="display:grid;place-items:center;width:38px;height:38px;border-radius:var(--r-card);background:var(--surface-3);color:var(--text-2);font-size:13px;font-weight:600">ML</span>
+              <span style="position:absolute;right:-3px;bottom:-3px;display:grid;place-items:center;width:17px;height:17px;border-radius:6px;border:2px solid var(--surface);background:rgba(122,92,134,.14);color:#7A5C86"><svg width="9.5" height="9.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 7.5 20M16.5 4 15 20M5 9h14M4 15h14"></path></svg></span>
+            </span>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+              <span style="display:flex;align-items:baseline;gap:8px"><span style="font-size:14px;font-weight:700;color:var(--text)">Mara Lindqvist</span><span style="flex:1"></span><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3)">09:11</span><span style="width:7px;height:7px;border-radius:50%;background:var(--accent)"></span></span>
+              <span style="display:flex;align-items:center;gap:7px;min-width:0"><span style="font-family:var(--font-mono);font-size:11px;color:#7A5C86;background:rgba(122,92,134,.14);padding:1px 6px;border-radius:5px">#incident-response</span><span style="font-size:14px;font-weight:600;color:var(--text)">Elevated error rate on the gateway</span></span>
+              <span style="display:flex;align-items:center;gap:8px;min-width:0"><span style="flex:1;font-size:13px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Rolling back the 14:02 deploy now — can you confirm…</span><span style="display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:10.5px;color:var(--warning);background:var(--warning-soft);padding:2px 7px;border-radius:999px"><span style="width:5px;height:5px;border-radius:50%;background:var(--warning)"></span>High</span></span>
+            </span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:14px">
+            <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-3);border:1px solid var(--border);padding:3px 8px;border-radius:999px">accent bar = selected</span>
+            <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-3);border:1px solid var(--border);padding:3px 8px;border-radius:999px">avatar + source badge</span>
+            <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-3);border:1px solid var(--border);padding:3px 8px;border-radius:999px">unread = 700 + dot</span>
+            <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-3);border:1px solid var(--border);padding:3px 8px;border-radius:999px">snippet truncates</span>
+          </div>
+        </div>
+
+        <!-- Source badge -->
+        <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:20px 22px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><h3 style="font-size:15px;font-weight:600;color:var(--text);margin:0">Source badge</h3><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3)">icon-coded</span></div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:center;gap:12px"><span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#5A6675;background:#EDF0F4;padding:5px 11px;border-radius:999px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5h17v11h-17z"></path><path d="M3.8 7l8.2 6 8.2-6"></path></svg>Email</span><span style="font-size:12px;color:var(--text-3)">slate · neutral</span></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#7A5C86;background:#F0EAF3;padding:5px 11px;border-radius:999px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 7.5 20M16.5 4 15 20M5 9h14M4 15h14"></path></svg>Slack</span><span style="font-size:12px;color:var(--text-3)">muted plum</span></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#3E7CA8;background:#E7F0F6;padding:5px 11px;border-radius:999px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4 11 15"></path><path d="M22 4 15 21l-4-6-6-4z"></path></svg>Telegram</span><span style="font-size:12px;color:var(--text-3)">muted steel</span></div>
+          </div>
+          <p style="font-size:12.5px;color:var(--text-2);margin:16px 0 0;max-width:46ch">Source color is intentionally desaturated — it identifies, it never shouts. Icon + label means color is never the only cue (AA-safe).</p>
+        </div>
+
+        <!-- Priority badge -->
+        <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:20px 22px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><h3 style="font-size:15px;font-weight:600;color:var(--text);margin:0">Priority badge</h3><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3)">dot + label</span></div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:center;gap:12px"><span style="display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;color:var(--danger);background:var(--danger-soft);padding:3px 9px;border-radius:999px"><span style="width:6px;height:6px;border-radius:50%;background:var(--danger)"></span>Urgent</span><span style="font-size:12px;color:var(--text-3)">action now</span></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;color:var(--warning);background:var(--warning-soft);padding:3px 9px;border-radius:999px"><span style="width:6px;height:6px;border-radius:50%;background:var(--warning)"></span>High</span><span style="font-size:12px;color:var(--text-3)">today</span></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;color:var(--text-2);background:var(--surface-3);padding:3px 9px;border-radius:999px"><span style="width:6px;height:6px;border-radius:50%;background:var(--text-3)"></span>Normal</span><span style="font-size:12px;color:var(--text-3)">no pill in list</span></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;color:var(--text-3);background:transparent;border:1px solid var(--border);padding:3px 9px;border-radius:999px"><span style="width:6px;height:6px;border-radius:50%;background:var(--border-strong)"></span>Low</span><span style="font-size:12px;color:var(--text-3)">de-emphasized</span></div>
+          </div>
+          <p style="font-size:12.5px;color:var(--text-2);margin:16px 0 0;max-width:46ch">Only Urgent and High earn a colored pill in the list. Normal and Low stay silent to protect the calm.</p>
+        </div>
+
+        <!-- Thread panel -->
+        <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:20px 22px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><h3 style="font-size:15px;font-weight:600;color:var(--text);margin:0">Thread panel</h3><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3)">header · stream · composer</span></div>
+          <div style="border:1px solid var(--border);border-radius:var(--r-card);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border);background:var(--surface-2)"><span style="font-size:12.5px;font-weight:600;color:var(--text)">Thread subject</span><span style="flex:1"></span><span style="width:22px;height:22px;border-radius:6px;border:1px solid var(--border);background:var(--surface)"></span><span style="width:22px;height:22px;border-radius:6px;border:1px solid var(--border);background:var(--surface)"></span></div>
+            <div style="padding:12px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:9px"><span style="width:24px;height:24px;border-radius:50%;background:var(--surface-3);flex:none"></span><span style="height:30px;flex:1;border-radius:8px;background:var(--surface-2)"></span></div>
+              <div style="display:flex;gap:9px;flex-direction:row-reverse"><span style="width:24px;height:24px;border-radius:50%;background:var(--accent-soft);flex:none"></span><span style="height:24px;width:60%;border-radius:8px;background:var(--accent-soft)"></span></div>
+            </div>
+            <div style="padding:10px 12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px"><span style="flex:1;font-size:12px;color:var(--text-3)">Reply securely…</span><span style="font-size:10.5px;color:var(--success)">E2E</span></div>
+          </div>
+          <p style="font-size:12.5px;color:var(--text-2);margin:14px 0 0;max-width:46ch">Sticky header + scrolling stream + persistent composer. Your own messages tint with accent-soft; the composer always states the encryption state.</p>
+        </div>
+
+        <!-- Command palette -->
+        <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:20px 22px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><h3 style="font-size:15px;font-weight:600;color:var(--text);margin:0">Command palette</h3><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3)">⌘K · on-device</span></div>
+          <div style="border:1px solid var(--border-strong);border-radius:var(--r-btn);overflow:hidden;box-shadow:var(--shadow-1)">
+            <div style="display:flex;align-items:center;gap:9px;padding:10px 12px;border-bottom:1px solid var(--border)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"></path><path d="M16.5 16.5 21 21"></path></svg><span style="flex:1;font-size:12.5px;color:var(--text-3)">Search or run a command…</span></div>
+            <div style="padding:6px"><div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:6px;background:var(--accent-soft)"><span style="width:20px;height:20px;border-radius:5px;background:var(--surface-2)"></span><span style="flex:1;font-size:12.5px;color:var(--accent)">Archive thread</span><span style="font-family:var(--font-mono);font-size:10px;color:var(--text-3);background:var(--surface-3);padding:2px 6px;border-radius:4px">E</span></div><div style="display:flex;align-items:center;gap:9px;padding:7px 9px"><span style="width:20px;height:20px;border-radius:5px;background:var(--surface-2)"></span><span style="flex:1;font-size:12.5px;color:var(--text)">Block remote content</span><span style="font-family:var(--font-mono);font-size:10px;color:var(--text-3);border:1px solid var(--border);padding:2px 6px;border-radius:999px">on</span></div></div>
+          </div>
+          <p style="font-size:12.5px;color:var(--text-2);margin:14px 0 0;max-width:46ch">Keyboard-first. Grouped Jump / Actions / Privacy. The footer states it runs on-device — no query leaves the machine.</p>
+        </div>
+
+        <!-- Security card -->
+        <div style="grid-column:1 / -1;border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:20px 22px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><h3 style="font-size:15px;font-weight:600;color:var(--text);margin:0">Security card</h3><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3)">trust at a glance</span></div>
+          <p style="font-size:13px;color:var(--text-2);margin:0 0 16px;max-width:74ch">A quiet 2×2 of the four facts that build trust — transport, identity, content, retention — plus a privacy footnote. Never alarmist: success-soft header, neutral body. It reassures without demanding attention.</p>
+          <div style="border:1px solid var(--border);border-radius:var(--r-card);overflow:hidden;max-width:560px">
+            <div style="display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--border)"><span style="display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--success-soft);color:var(--success)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l7 2.5v5c0 4.3-3 7.2-7 9.4-4-2.2-7-5.1-7-9.4v-5z"></path><path d="M9 11.8l2.1 2.1 4-4.3"></path></svg></span><span style="font-weight:600;font-size:13.5px;color:var(--text)">Conversation secured</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr">
+              <div style="padding:11px 14px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)"><span style="display:block;font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)">Transport</span><span style="display:block;font-size:12.5px;color:var(--text);margin-top:2px">TLS 1.3 · in transit</span></div>
+              <div style="padding:11px 14px;border-bottom:1px solid var(--border)"><span style="display:block;font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)">Identity</span><span style="display:block;font-size:12.5px;color:var(--text);margin-top:2px">SSO · verified</span></div>
+              <div style="padding:11px 14px;border-right:1px solid var(--border)"><span style="display:block;font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)">Content</span><span style="display:block;font-size:12.5px;color:var(--text);margin-top:2px">Remote media blocked</span></div>
+              <div style="padding:11px 14px"><span style="display:block;font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)">Retention</span><span style="display:block;font-size:12.5px;color:var(--text);margin-top:2px">Auto-deletes · 30 days</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ STATES ============ -->
+    <section id="states" style="padding:56px 0 0;scroll-margin-top:72px">
+      <div style="display:flex;align-items:flex-end;gap:14px;border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:26px">
+        <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent);background:var(--accent-soft);padding:3px 9px;border-radius:var(--r-chip)">03</span>
+        <h2 style="font-family:var(--font-head);font-weight:var(--head-weight);letter-spacing:var(--head-tracking);font-size:26px;margin:0;color:var(--text)">States</h2>
+        <span style="flex:1"></span>
+        <span style="font-size:13px;color:var(--text-3);max-width:42ch;text-align:right">Hover, focus, disabled, error, loading, skeleton — shown on real controls.</span>
+      </div>
+
+      <!-- interactive states on the inbox row + button -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:18px">
+        <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:16px 18px">
+          <span style="display:block;font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Hover</span>
+          <div style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:var(--r-card);background:var(--surface-2)"><span style="width:30px;height:30px;border-radius:8px;background:var(--surface-3)"></span><span style="flex:1"><span style="display:block;height:9px;width:70%;border-radius:4px;background:var(--surface-3)"></span><span style="display:block;height:8px;width:50%;border-radius:4px;background:var(--surface-3);margin-top:6px"></span></span></div>
+          <p style="font-size:12px;color:var(--text-3);margin:10px 0 0">Row fills <code style="font-family:var(--font-mono)">surface-2</code>. No motion, no shift.</p>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:16px 18px">
+          <span style="display:block;font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Focus-visible</span>
+          <div style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:var(--r-card);background:var(--surface);outline:2px solid var(--accent);outline-offset:2px"><span style="width:30px;height:30px;border-radius:8px;background:var(--surface-3)"></span><span style="flex:1"><span style="display:block;height:9px;width:70%;border-radius:4px;background:var(--surface-3)"></span><span style="display:block;height:8px;width:50%;border-radius:4px;background:var(--surface-3);margin-top:6px"></span></span></div>
+          <p style="font-size:12px;color:var(--text-3);margin:10px 0 0">2px accent ring, 2px offset. Keyboard only.</p>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:16px 18px">
+          <span style="display:block;font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Disabled</span>
+          <div style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:var(--r-card);background:var(--surface);opacity:.45"><span style="width:30px;height:30px;border-radius:8px;background:var(--surface-3)"></span><span style="flex:1"><span style="display:block;height:9px;width:70%;border-radius:4px;background:var(--surface-3)"></span><span style="display:block;height:8px;width:50%;border-radius:4px;background:var(--surface-3);margin-top:6px"></span></span></div>
+          <p style="font-size:12px;color:var(--text-3);margin:10px 0 0">Opacity .45, <code style="font-family:var(--font-mono)">not-allowed</code>, aria-disabled.</p>
+        </div>
+      </div>
+
+      <!-- buttons across states -->
+      <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:18px 20px;margin-bottom:18px">
+        <span style="display:block;font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">Primary action · all states</span>
+        <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center">
+          <span style="display:flex;flex-direction:column;gap:6px;align-items:center"><button type="button" style="height:34px;padding:0 16px;border-radius:var(--r-btn);border:0;background:var(--accent);color:var(--accent-fg);font-family:var(--font-ui);font-size:13px;font-weight:600;cursor:pointer">Send</button><span style="font-family:var(--font-mono);font-size:10px;color:var(--text-3)">default</span></span>
+          <span style="display:flex;flex-direction:column;gap:6px;align-items:center"><button type="button" style="height:34px;padding:0 16px;border-radius:var(--r-btn);border:0;background:var(--accent-hover);color:var(--accent-fg);font-family:var(--font-ui);font-size:13px;font-weight:600;cursor:pointer">Send</button><span style="font-family:var(--font-mono);font-size:10px;color:var(--text-3)">hover</span></span>
+          <span style="display:flex;flex-direction:column;gap:6px;align-items:center"><button type="button" style="height:34px;padding:0 16px;border-radius:var(--r-btn);border:0;background:var(--accent);color:var(--accent-fg);font-family:var(--font-ui);font-size:13px;font-weight:600;outline:2px solid var(--accent-ring);outline-offset:2px;cursor:pointer">Send</button><span style="font-family:var(--font-mono);font-size:10px;color:var(--text-3)">focus</span></span>
+          <span style="display:flex;flex-direction:column;gap:6px;align-items:center"><button type="button" disabled style="height:34px;padding:0 16px;border-radius:var(--r-btn);border:0;background:var(--accent);color:var(--accent-fg);font-family:var(--font-ui);font-size:13px;font-weight:600;opacity:.45;cursor:not-allowed">Send</button><span style="font-family:var(--font-mono);font-size:10px;color:var(--text-3)">disabled</span></span>
+          <span style="display:flex;flex-direction:column;gap:6px;align-items:center"><button type="button" style="display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 16px;border-radius:var(--r-btn);border:0;background:var(--accent);color:var(--accent-fg);font-family:var(--font-ui);font-size:13px;font-weight:600"><span style="width:13px;height:13px;border:2px solid var(--accent-fg);border-right-color:transparent;border-radius:50%;animation:om-spin .7s linear infinite;display:inline-block"></span>Sending…</button><span style="font-family:var(--font-mono);font-size:10px;color:var(--text-3)">loading</span></span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <!-- error -->
+        <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:18px 20px">
+          <span style="display:block;font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">Error</span>
+          <label style="display:block;font-size:12px;color:var(--text-2);margin-bottom:6px">Recipient</label>
+          <div style="display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;border-radius:var(--r-btn);border:1.5px solid var(--danger);background:var(--surface)"><span style="flex:1;font-size:13px;color:var(--text)">mara@</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"></path><path d="M12 8v5M12 16h.01"></path></svg></div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:7px;color:var(--danger)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"></path><path d="M12 8v5M12 16h.01"></path></svg><span style="font-size:12px">Enter a complete address. Error text never relies on color alone.</span></div>
+          <div style="margin-top:16px;display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:var(--r-card);background:var(--danger-soft)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px"><path d="M10.3 4.3 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z"></path><path d="M12 9v4M12 17h.01"></path></svg><span><span style="display:block;font-size:13px;font-weight:600;color:var(--text)">Couldn’t reach Slack</span><span style="display:block;font-size:12.5px;color:var(--text-2);margin-top:2px">We’ll retry automatically. Nothing was sent twice.</span></span></div>
+        </div>
+        <!-- loading + skeleton -->
+        <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:18px 20px">
+          <span style="display:block;font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">Loading &amp; skeleton</span>
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px"><span style="width:16px;height:16px;border:2px solid var(--accent);border-right-color:transparent;border-radius:50%;animation:om-spin .7s linear infinite;display:inline-block"></span><span style="font-size:13px;color:var(--text-2)">Syncing sources…</span></div>
+          <sc-for list="{{ skeletonRows }}" as="r" hint-placeholder-count="3">
+            <div style="display:flex;gap:11px;padding:9px 0">
+              <span style="width:38px;height:38px;border-radius:10px;background:linear-gradient(90deg,var(--skeleton) 25%,var(--skeleton-sheen) 37%,var(--skeleton) 63%);background-size:200% 100%;animation:om-shimmer 1.4s ease infinite;flex:none"></span>
+              <span style="flex:1;display:flex;flex-direction:column;gap:7px;justify-content:center">
+                <span style="height:10px;width:62%;border-radius:5px;background:linear-gradient(90deg,var(--skeleton) 25%,var(--skeleton-sheen) 37%,var(--skeleton) 63%);background-size:200% 100%;animation:om-shimmer 1.4s ease infinite"></span>
+                <span style="height:9px;width:88%;border-radius:5px;background:linear-gradient(90deg,var(--skeleton) 25%,var(--skeleton-sheen) 37%,var(--skeleton) 63%);background-size:200% 100%;animation:om-shimmer 1.4s ease infinite"></span>
+              </span>
+            </div>
+          </sc-for>
+          <p style="font-size:12px;color:var(--text-3);margin:10px 0 0">Skeleton mirrors the real row geometry so nothing jumps on load. Shimmer respects <code style="font-family:var(--font-mono)">reduced-motion</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ RESPONSIVE ============ -->
+    <section id="responsive" style="padding:56px 0 0;scroll-margin-top:72px">
+      <div style="display:flex;align-items:flex-end;gap:14px;border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:26px">
+        <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent);background:var(--accent-soft);padding:3px 9px;border-radius:var(--r-chip)">04</span>
+        <h2 style="font-family:var(--font-head);font-weight:var(--head-weight);letter-spacing:var(--head-tracking);font-size:26px;margin:0;color:var(--text)">Responsive</h2>
+        <span style="flex:1"></span>
+        <span style="font-size:13px;color:var(--text-3);max-width:44ch;text-align:right">Three-pane on desktop collapses to list-or-thread on mobile. Breakpoints: ≥1100 · 720–1099 · &lt;720.</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1.5fr 1.1fr 0.7fr;gap:18px;align-items:start">
+        <!-- desktop -->
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:13px;font-weight:600;color:var(--text)">Desktop</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3)">≥ 1100px · 3 panes</span></div>
+          <div style="border:1px solid var(--border-strong);border-radius:var(--r-card);background:var(--surface);overflow:hidden;box-shadow:var(--shadow-1)">
+            <div style="height:22px;background:var(--surface-2);border-bottom:1px solid var(--border)"></div>
+            <div style="display:flex;height:180px">
+              <div style="width:54px;background:var(--surface-2);border-right:1px solid var(--border)"></div>
+              <div style="width:120px;border-right:1px solid var(--border);padding:8px;display:flex;flex-direction:column;gap:7px"><span style="height:11px;border-radius:4px;background:var(--surface-3)"></span><span style="height:11px;width:80%;border-radius:4px;background:var(--surface-3)"></span><span style="height:11px;width:90%;border-radius:4px;background:var(--surface-3)"></span></div>
+              <div style="flex:1;padding:8px;display:flex;flex-direction:column;gap:7px;background:var(--bg)"><span style="height:11px;width:60%;border-radius:4px;background:var(--surface-3)"></span><span style="height:36px;border-radius:6px;background:var(--surface-2)"></span><span style="height:36px;width:80%;border-radius:6px;background:var(--accent-soft);align-self:flex-end"></span></div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--text-3);margin:10px 0 0">Nav rail · list · thread, all visible. Security card inline above the stream.</p>
+        </div>
+        <!-- tablet -->
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:13px;font-weight:600;color:var(--text)">Tablet</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3)">720–1099 · 2 panes</span></div>
+          <div style="border:1px solid var(--border-strong);border-radius:var(--r-card);background:var(--surface);overflow:hidden;box-shadow:var(--shadow-1)">
+            <div style="height:22px;background:var(--surface-2);border-bottom:1px solid var(--border)"></div>
+            <div style="display:flex;height:180px">
+              <div style="width:130px;border-right:1px solid var(--border);padding:8px;display:flex;flex-direction:column;gap:7px"><span style="height:11px;border-radius:4px;background:var(--surface-3)"></span><span style="height:11px;width:80%;border-radius:4px;background:var(--surface-3)"></span><span style="height:11px;width:90%;border-radius:4px;background:var(--surface-3)"></span></div>
+              <div style="flex:1;padding:8px;display:flex;flex-direction:column;gap:7px;background:var(--bg)"><span style="height:11px;width:55%;border-radius:4px;background:var(--surface-3)"></span><span style="height:36px;border-radius:6px;background:var(--surface-2)"></span><span style="height:36px;width:78%;border-radius:6px;background:var(--accent-soft);align-self:flex-end"></span></div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--text-3);margin:10px 0 0">Nav collapses to icons. List + thread share the width; tap a row to open.</p>
+        </div>
+        <!-- mobile -->
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:13px;font-weight:600;color:var(--text)">Mobile</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3)">&lt; 720 · 1 pane</span></div>
+          <div style="width:150px;margin:0 auto;border:6px solid var(--text);border-radius:26px;background:var(--surface);overflow:hidden;box-shadow:var(--shadow-2)">
+            <div style="height:18px;background:var(--surface-2)"></div>
+            <div style="padding:8px;display:flex;flex-direction:column;gap:8px;height:200px">
+              <span style="height:14px;width:50%;border-radius:5px;background:var(--surface-3)"></span>
+              <span style="height:40px;border-radius:8px;background:var(--surface-2)"></span>
+              <span style="height:40px;border-radius:8px;background:var(--surface-2)"></span>
+              <span style="height:40px;border-radius:8px;background:var(--surface-2)"></span>
+              <span style="flex:1"></span>
+              <span style="height:32px;border-radius:999px;background:var(--accent-soft)"></span>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--text-3);margin:10px 0 0;text-align:center">List ↔ thread swap full-screen. ⌘K becomes a bottom search. 44px hit targets.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ A11Y + PRIVACY ============ -->
+    <section id="a11y" style="padding:56px 0 0;scroll-margin-top:72px">
+      <div style="display:flex;align-items:flex-end;gap:14px;border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:26px">
+        <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent);background:var(--accent-soft);padding:3px 9px;border-radius:var(--r-chip)">05</span>
+        <h2 style="font-family:var(--font-head);font-weight:var(--head-weight);letter-spacing:var(--head-tracking);font-size:26px;margin:0;color:var(--text)">Accessibility &amp; privacy</h2>
+        <span style="flex:1"></span>
+        <span style="font-size:13px;color:var(--text-3);max-width:42ch;text-align:right">Contrast computed live for the current theme. WCAG AA throughout.</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:18px">
+        <!-- contrast table -->
+        <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)"><h3 style="font-size:14px;font-weight:600;color:var(--text);margin:0">Contrast · live</h3><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3)">{{ dirKey }} · {{ modeKey }}</span></div>
+          <sc-for list="{{ a11y }}" as="p" hint-placeholder-count="6">
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border)">
+              <span style="display:grid;place-items:center;width:42px;height:30px;border-radius:7px;background:{{ p.bg }};color:{{ p.fg }};font-size:13px;font-weight:700;border:1px solid var(--border)">Aa</span>
+              <span style="flex:1;min-width:0"><span style="display:block;font-size:13px;color:var(--text)">{{ p.label }}</span><span style="display:block;font-size:11.5px;color:var(--text-3)">{{ p.note }}</span></span>
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-2)">{{ p.ratio }}:1</span>
+              <span style="display:inline-flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:10.5px;color:{{ p.bColor }};background:{{ p.bSoft }};padding:3px 8px;border-radius:999px">
+                <sc-if value="{{ p.showCheck }}" hint-placeholder-val="{{ true }}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"></path></svg></sc-if>{{ p.badge }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- a11y principles -->
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);padding:16px 18px">
+            <h3 style="font-size:14px;font-weight:600;color:var(--text);margin:0 0 12px">Built-in for AA</h3>
+            <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px">
+              <li style="display:flex;gap:9px;font-size:13px;color:var(--text-2)"><span style="color:var(--success);flex:none;margin-top:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"></path></svg></span>Visible 2px focus ring on every interactive element, 3:1+ against its background.</li>
+              <li style="display:flex;gap:9px;font-size:13px;color:var(--text-2)"><span style="color:var(--success);flex:none;margin-top:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"></path></svg></span>Source &amp; priority never rely on color alone — always paired icon + text.</li>
+              <li style="display:flex;gap:9px;font-size:13px;color:var(--text-2)"><span style="color:var(--success);flex:none;margin-top:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"></path></svg></span>Full keyboard path: ⌘K, arrow nav, <code style="font-family:var(--font-mono)">E</code>/<code style="font-family:var(--font-mono)">S</code> shortcuts, roving tabindex in the list.</li>
+              <li style="display:flex;gap:9px;font-size:13px;color:var(--text-2)"><span style="color:var(--success);flex:none;margin-top:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"></path></svg></span>Semantic roles: list/listitem rows, dialog palette, aria-live for sync &amp; errors.</li>
+              <li style="display:flex;gap:9px;font-size:13px;color:var(--text-2)"><span style="color:var(--success);flex:none;margin-top:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"></path></svg></span>Respects <code style="font-family:var(--font-mono)">prefers-reduced-motion</code> and <code style="font-family:var(--font-mono)">prefers-color-scheme</code>.</li>
+            </ul>
+          </div>
+          <div style="border:1px solid var(--accent);border-radius:var(--r-card);background:var(--accent-soft);padding:16px 18px">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px"><span style="display:grid;place-items:center;width:26px;height:26px;border-radius:8px;background:var(--accent);color:var(--accent-fg)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11h12v9H6z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></svg></span><h3 style="font-size:14px;font-weight:700;color:var(--accent);margin:0">Privacy-first by design</h3></div>
+            <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px">
+              <li style="display:flex;gap:9px;font-size:13px;color:var(--text)"><span style="color:var(--accent);font-family:var(--font-mono);flex:none">01</span>Remote images &amp; trackers blocked by default — opt in per sender, never globally.</li>
+              <li style="display:flex;gap:9px;font-size:13px;color:var(--text)"><span style="color:var(--accent);font-family:var(--font-mono);flex:none">02</span>Search and command palette run on-device. No query telemetry.</li>
+              <li style="display:flex;gap:9px;font-size:13px;color:var(--text)"><span style="color:var(--accent);font-family:var(--font-mono);flex:none">03</span>No read receipts sent unless you turn them on. Previews can be redacted.</li>
+              <li style="display:flex;gap:9px;font-size:13px;color:var(--text)"><span style="color:var(--accent);font-family:var(--font-mono);flex:none">04</span>Data minimization: the UI asks for the least it needs, with clear retention &amp; one-tap local wipe.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CODE ============ -->
+    <section id="code" style="padding:56px 0 0;scroll-margin-top:72px">
+      <div style="display:flex;align-items:flex-end;gap:14px;border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:26px">
+        <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent);background:var(--accent-soft);padding:3px 9px;border-radius:var(--r-chip)">06</span>
+        <h2 style="font-family:var(--font-head);font-weight:var(--head-weight);letter-spacing:var(--head-tracking);font-size:26px;margin:0;color:var(--text)">React + Tailwind</h2>
+        <span style="flex:1"></span>
+        <span style="font-size:13px;color:var(--text-3);max-width:44ch;text-align:right">Key components only. Tokens map to Tailwind theme vars; semantic class names carry the calm.</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+        <!-- InboxItem -->
+        <div style="border:1px solid var(--border-strong);border-radius:var(--r-card);background:var(--surface);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface-2)"><span style="font-family:var(--font-mono);font-size:11.5px;color:var(--text-2)">InboxItem.tsx</span></div>
+          <pre style="margin:0;padding:16px;overflow-x:auto;font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:var(--text)"><code>export function InboxItem({ msg, active, onOpen }: Props) {
+  return (
+    &lt;button
+      onClick={onOpen}
+      aria-label={`${msg.sender}: ${msg.subject}`}
+      data-active={active}
+      className="group relative flex w-full gap-3 rounded-lg
+        px-4 py-[15px] text-left
+        hover:bg-surface-2
+        focus-visible:outline-2 focus-visible:outline-accent
+        focus-visible:outline-offset-2
+        data-[active=true]:bg-surface-2"
+    &gt;
+      &lt;span className="absolute left-0 inset-y-3 w-[3px] rounded-r
+        bg-transparent group-data-[active=true]:bg-accent" /&gt;
+      &lt;Avatar initials={msg.initials} source={msg.source} /&gt;
+      &lt;span className="min-w-0 flex-1 space-y-[3px]"&gt;
+        &lt;span className="flex items-baseline gap-2"&gt;
+          &lt;span className={cn("truncate text-sm text-text",
+            msg.unread ? "font-bold" : "font-medium")}&gt;
+            {msg.sender}
+          &lt;/span&gt;
+          &lt;time className="ml-auto font-mono text-[11px]
+            text-text-3"&gt;{msg.time}&lt;/time&gt;
+          {msg.unread &amp;&amp; (
+            &lt;span className="size-[7px] rounded-full bg-accent" /&gt;
+          )}
+        &lt;/span&gt;
+        &lt;SubjectLine msg={msg} /&gt;
+        &lt;Snippet msg={msg} /&gt;
+      &lt;/span&gt;
+    &lt;/button&gt;
+  );
+}</code></pre>
+        </div>
+
+        <!-- Badges -->
+        <div style="border:1px solid var(--border-strong);border-radius:var(--r-card);background:var(--surface);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface-2)"><span style="font-family:var(--font-mono);font-size:11.5px;color:var(--text-2)">Badges.tsx</span></div>
+          <pre style="margin:0;padding:16px;overflow-x:auto;font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:var(--text)"><code>const SOURCE = {
+  email:    { label: "Email",    Icon: Mail, tone: "slate" },
+  slack:    { label: "Slack",    Icon: Hash, tone: "plum"  },
+  telegram: { label: "Telegram", Icon: Send, tone: "steel" },
+} as const;
+
+export function SourceBadge({ source }: { source: Source }) {
+  const { label, Icon, tone } = SOURCE[source];
+  return (
+    &lt;span data-tone={tone}
+      className="inline-flex items-center gap-1.5
+        rounded-full px-2.5 py-1 text-xs
+        data-[tone=slate]:bg-slate-soft data-[tone=slate]:text-slate
+        data-[tone=plum]:bg-plum-soft  data-[tone=plum]:text-plum
+        data-[tone=steel]:bg-steel-soft data-[tone=steel]:text-steel"&gt;
+      &lt;Icon className="size-3.5" aria-hidden /&gt; {label}
+    &lt;/span&gt;
+  );
+}
+
+// Only Urgent / High render a colored pill — calm by default.
+export function PriorityBadge({ level }: { level: Priority }) {
+  if (level === "normal" || level === "low") return null;
+  const tone = level === "urgent" ? "danger" : "warning";
+  return (
+    &lt;span data-tone={tone}
+      className="inline-flex items-center gap-1.5 rounded-full
+        px-2 py-0.5 font-mono text-[10.5px]
+        data-[tone=danger]:bg-danger-soft  data-[tone=danger]:text-danger
+        data-[tone=warning]:bg-warning-soft data-[tone=warning]:text-warning"&gt;
+      &lt;span className="size-[5px] rounded-full bg-current" /&gt;
+      {level === "urgent" ? "Urgent" : "High"}
+    &lt;/span&gt;
+  );
+}</code></pre>
+        </div>
+
+        <!-- SecurityCard -->
+        <div style="border:1px solid var(--border-strong);border-radius:var(--r-card);background:var(--surface);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface-2)"><span style="font-family:var(--font-mono);font-size:11.5px;color:var(--text-2)">SecurityCard.tsx</span></div>
+          <pre style="margin:0;padding:16px;overflow-x:auto;font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:var(--text)"><code>export function SecurityCard({ facts }: { facts: SecurityFacts }) {
+  return (
+    &lt;section aria-label="Conversation security"
+      className="overflow-hidden rounded-card border border-border
+        bg-surface shadow-1"&gt;
+      &lt;header className="flex items-center gap-2 border-b
+        border-border px-3.5 py-2.5"&gt;
+        &lt;span className="grid size-6 place-items-center rounded-md
+          bg-success-soft text-success"&gt;
+          &lt;ShieldCheck className="size-3.5" aria-hidden /&gt;
+        &lt;/span&gt;
+        &lt;h3 className="text-sm font-semibold text-text"&gt;
+          Conversation secured
+        &lt;/h3&gt;
+      &lt;/header&gt;
+      &lt;dl className="grid grid-cols-2"&gt;
+        {facts.map((f, i) =&gt; (
+          &lt;div key={f.label}
+            className="border-border px-3.5 py-2.5
+              [&amp;:nth-child(odd)]:border-r [&amp;:nth-child(-n+2)]:border-b"&gt;
+            &lt;dt className="font-mono text-[10px] uppercase
+              tracking-wide text-text-3"&gt;{f.label}&lt;/dt&gt;
+            &lt;dd className="mt-0.5 text-[12.5px] text-text"&gt;{f.value}&lt;/dd&gt;
+          &lt;/div&gt;
+        ))}
+      &lt;/dl&gt;
+    &lt;/section&gt;
+  );
+}</code></pre>
+        </div>
+
+        <!-- tokens config -->
+        <div style="border:1px solid var(--border-strong);border-radius:var(--r-card);background:var(--surface);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface-2)"><span style="font-family:var(--font-mono);font-size:11.5px;color:var(--text-2)">tailwind.config.ts · tokens</span></div>
+          <pre style="margin:0;padding:16px;overflow-x:auto;font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:var(--text)"><code>// Tokens are CSS vars so the 3 directions × light/dark
+// swap at runtime with zero re-render.
+export default {
+  theme: {
+    extend: {
+      colors: {
+        bg: "var(--bg)", surface: "var(--surface)",
+        "surface-2": "var(--surface-2)", "surface-3": "var(--surface-3)",
+        border: "var(--border)",
+        text: "var(--text)", "text-2": "var(--text-2)",
+        "text-3": "var(--text-3)",
+        accent: "var(--accent)", "accent-soft": "var(--accent-soft)",
+        success: "var(--success)", "success-soft": "var(--success-soft)",
+        warning: "var(--warning)", "warning-soft": "var(--warning-soft)",
+        danger:  "var(--danger)",  "danger-soft":  "var(--danger-soft)",
+      },
+      borderRadius: {
+        chip: "var(--r-chip)", btn: "var(--r-btn)",
+        card: "var(--r-card)", panel: "var(--r-panel)",
+      },
+      boxShadow: {
+        1: "var(--shadow-1)", 2: "var(--shadow-2)", 3: "var(--shadow-3)",
+      },
+      fontFamily: {
+        sans: "var(--font-ui)", head: "var(--font-head)",
+        mono: "var(--font-mono)",
+      },
+    },
+  },
+} satisfies Config;</code></pre>
+        </div>
+
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-top:28px;padding:16px 20px;border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface-2)">
+        <span style="display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--accent);color:var(--accent-fg);flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l7 2.5v5c0 4.3-3 7.2-7 9.4-4-2.2-7-5.1-7-9.4v-5z"></path><path d="M9 11.8l2.1 2.1 4-4.3"></path></svg></span>
+        <span style="font-size:13px;color:var(--text-2);flex:1">Calm, legible, high-trust — and privacy-first all the way down to the token defaults. Switch direction or theme at the top to see the whole spec re-derive.</span>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;defaultDirection&quot;: {&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;slate&quot;,&quot;paper&quot;,&quot;graphite&quot;],&quot;default&quot;:&quot;slate&quot;,&quot;tsType&quot;:&quot;'slate'|'paper'|'graphite'&quot;},
+  &quot;defaultMode&quot;: {&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;},
+  &quot;density&quot;: {&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;comfortable&quot;,&quot;compact&quot;],&quot;default&quot;:&quot;comfortable&quot;,&quot;tsType&quot;:&quot;'comfortable'|'compact'&quot;}
+}">
+class Component extends DCLogic {
+  state = { direction: undefined, mode: undefined, density: undefined, paletteOpen: false, selected: 'm2' };
+
+  ICONS = {
+    mail:'M3.5 6.5h17v11h-17z M3.8 7l8.2 6 8.2-6',
+    hash:'M9 4 7.5 20 M16.5 4 15 20 M5 9h14 M4 15h14',
+    send:'M22 4 11 15 M22 4 15 21l-4-6-6-4z',
+    inbox:'M3.5 12.5 6 5.5h12l2.5 7v6h-17z M3.5 12.5H9l1.2 2.3h3.6L15 12.5h5.5',
+    clock:'M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z M12 8v4.2l3 1.8',
+    archive:'M3.5 6.5h17v3h-17z M5 9.5v9h14v-9 M9.5 13h5',
+    check:'M5 12.5 10 17.5 19 7',
+    mute:'M4 9.5h3l4-3.5v12l-4-3.5H4z M15.5 9.5l4 5 M19.5 9.5l-4 5',
+    eye:'M2.5 12S6 6 12 6s9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z M12 9.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6z',
+    lock:'M6 11h12v9H6z M9 11V8a3 3 0 0 1 6 0v3',
+    shield:'M12 3.2l7 2.5v5c0 4.3-3 7.2-7 9.4-4-2.2-7-5.1-7-9.4v-5z',
+    trash:'M5 7h14 M9 7V5h6v2 M7 7l1 13h8l1-13'
+  };
+
+  directions = [ {key:'slate',label:'Quiet Slate'}, {key:'paper',label:'Warm Paper'}, {key:'graphite',label:'Graphite'} ];
+
+  DIRECTIONS = {
+    slate: {
+      label:'Quiet Slate', radius:{chip:6,btn:8,card:10,panel:14},
+      fonts:{ui:"'Public Sans',system-ui,sans-serif",head:"'Public Sans',system-ui,sans-serif",mono:"'IBM Plex Mono',ui-monospace,monospace",headWeight:700,headTracking:'-0.012em'},
+      light:{bg:'#F4F6F9',surface:'#FFFFFF',surface2:'#F0F3F7',surface3:'#E7ECF2',border:'#E4E8EF',borderStrong:'#D2D9E2',text:'#172230',text2:'#525F6F',text3:'#8A95A4',accent:'#2F4A6B',accentHover:'#243B57',accentSoft:'#E8EDF4',accentRing:'rgba(47,74,107,.40)',accentFg:'#FFFFFF',skeleton:'#E9EDF2',skeletonSheen:'#F5F7FA',shadow1:'0 1px 2px rgba(17,26,39,.04),0 1px 3px rgba(17,26,39,.05)',shadow2:'0 6px 16px rgba(17,26,39,.08)',shadow3:'0 18px 44px rgba(17,26,39,.14)',overlay:'rgba(20,28,40,.34)'},
+      dark:{bg:'#0F1722',surface:'#161F2C',surface2:'#1D2836',surface3:'#243140',border:'#273341',borderStrong:'#33424F',text:'#E9EDF2',text2:'#AAB6C4',text3:'#6F7C8C',accent:'#7FA2CC',accentHover:'#97B4D9',accentSoft:'rgba(127,162,204,.16)',accentRing:'rgba(127,162,204,.50)',accentFg:'#0F1722',skeleton:'#1E2937',skeletonSheen:'#283545',shadow1:'0 1px 2px rgba(0,0,0,.40)',shadow2:'0 8px 22px rgba(0,0,0,.45)',shadow3:'0 22px 50px rgba(0,0,0,.55)',overlay:'rgba(5,9,14,.60)'}
+    },
+    paper: {
+      label:'Warm Paper', radius:{chip:8,btn:10,card:14,panel:18},
+      fonts:{ui:"'Public Sans',system-ui,sans-serif",head:"'Newsreader',Georgia,serif",mono:"'IBM Plex Mono',ui-monospace,monospace",headWeight:600,headTracking:'0em'},
+      light:{bg:'#F7F4EE',surface:'#FFFEFB',surface2:'#F3EFE6',surface3:'#ECE6D9',border:'#E8E1D3',borderStrong:'#D8CFBC',text:'#211F1A',text2:'#5C564B',text3:'#938B7C',accent:'#3C5777',accentHover:'#2F4761',accentSoft:'#E8EBF0',accentRing:'rgba(60,87,119,.36)',accentFg:'#FFFFFF',skeleton:'#ECE7DC',skeletonSheen:'#F6F2EA',shadow1:'0 1px 2px rgba(60,48,28,.05),0 1px 3px rgba(60,48,28,.05)',shadow2:'0 6px 16px rgba(60,48,28,.08)',shadow3:'0 18px 44px rgba(60,48,28,.14)',overlay:'rgba(40,32,20,.34)'},
+      dark:{bg:'#16130D',surface:'#1E1A12',surface2:'#262117',surface3:'#2F2A1E',border:'#332D20',borderStrong:'#41392A',text:'#F0EBE0',text2:'#B7AE9C',text3:'#7C7565',accent:'#9FB6D2',accentHover:'#B4C6DD',accentSoft:'rgba(159,182,210,.15)',accentRing:'rgba(159,182,210,.50)',accentFg:'#16130D',skeleton:'#262117',skeletonSheen:'#312B1F',shadow1:'0 1px 2px rgba(0,0,0,.42)',shadow2:'0 8px 22px rgba(0,0,0,.48)',shadow3:'0 22px 50px rgba(0,0,0,.58)',overlay:'rgba(10,8,4,.60)'}
+    },
+    graphite: {
+      label:'Graphite', radius:{chip:4,btn:6,card:6,panel:8},
+      fonts:{ui:"'Public Sans',system-ui,sans-serif",head:"'Public Sans',system-ui,sans-serif",mono:"'IBM Plex Mono',ui-monospace,monospace",headWeight:700,headTracking:'-0.02em'},
+      light:{bg:'#F4F4F6',surface:'#FFFFFF',surface2:'#EFEFF2',surface3:'#E7E7EB',border:'#E4E4E9',borderStrong:'#D2D2D9',text:'#17191D',text2:'#51545B',text3:'#8A8D95',accent:'#36506E',accentHover:'#2A405A',accentSoft:'#EAECEF',accentRing:'rgba(54,80,110,.36)',accentFg:'#FFFFFF',skeleton:'#EAEAEE',skeletonSheen:'#F4F4F7',shadow1:'0 1px 2px rgba(20,22,28,.05)',shadow2:'0 4px 12px rgba(20,22,28,.07)',shadow3:'0 16px 40px rgba(20,22,28,.12)',overlay:'rgba(18,20,24,.36)'},
+      dark:{bg:'#0E0F12',surface:'#15171B',surface2:'#1C1F24',surface3:'#23272D',border:'#26292F',borderStrong:'#343A42',text:'#ECEDEF',text2:'#A7ABB3',text3:'#6C7178',accent:'#8AA6C6',accentHover:'#A1B8D2',accentSoft:'rgba(138,166,198,.15)',accentRing:'rgba(138,166,198,.50)',accentFg:'#0E0F12',skeleton:'#1C1F24',skeletonSheen:'#262A30',shadow1:'0 1px 2px rgba(0,0,0,.50)',shadow2:'0 6px 16px rgba(0,0,0,.55)',shadow3:'0 18px 44px rgba(0,0,0,.62)',overlay:'rgba(2,3,5,.62)'}
+    }
+  };
+
+  STATUS = {
+    light:{success:'#2E7D58',successSoft:'#E4EFE9',warning:'#8A6A1E',warningSoft:'#F3EBD6',danger:'#B04242',dangerSoft:'#F4E3E2',info:'#355C86',infoSoft:'#E7EDF4'},
+    dark:{success:'#6FB894',successSoft:'rgba(111,184,148,.15)',warning:'#D9B45A',warningSoft:'rgba(217,180,90,.15)',danger:'#E08585',dangerSoft:'rgba(224,133,133,.16)',info:'#84A9D6',infoSoft:'rgba(132,169,214,.16)'}
+  };
+
+  sources = {
+    email:{label:'Email',icon:'mail',light:{color:'#5A6675',soft:'#EDF0F4'},dark:{color:'#A2B2C4',soft:'rgba(162,178,196,.14)'}},
+    slack:{label:'Slack',icon:'hash',light:{color:'#7A5C86',soft:'#F0EAF3'},dark:{color:'#C0A6CC',soft:'rgba(192,166,204,.14)'}},
+    telegram:{label:'Telegram',icon:'send',light:{color:'#3E7CA8',soft:'#E7F0F6'},dark:{color:'#86B6D8',soft:'rgba(134,182,216,.14)'}}
+  };
+
+  priorities = { urgent:{label:'Urgent'}, high:{label:'High'}, normal:{label:'Normal'}, low:{label:'Low'} };
+
+  inboxData = [
+    {id:'m1',source:'email',sender:'Vault Security',channel:'',subject:'Verify a new sign-in from Berlin',snippet:'A new device requested access at 09:18 CET. Remote images were blocked.',time:'09:24',unread:true,priority:'urgent',attachment:false,initials:'VS'},
+    {id:'m2',source:'slack',sender:'Mara Lindqvist',channel:'#incident-response',subject:'Elevated error rate on the gateway',snippet:'Rolling back the 14:02 deploy now — can you confirm the canary is drained?',time:'09:11',unread:true,priority:'high',attachment:false,initials:'ML'},
+    {id:'m3',source:'telegram',sender:'Jonas Welt',channel:'',subject:'Contract draft — redlined',snippet:'Sent the redlined version. The indemnity clause still needs your eyes.',time:'08:47',unread:false,priority:'normal',attachment:true,initials:'JW'},
+    {id:'m4',source:'email',sender:'Aanya Rao',channel:'',subject:'Q3 board pre-read',snippet:'Attaching the pre-read; the retention metrics moved in the right direction.',time:'08:30',unread:true,priority:'normal',attachment:true,initials:'AR'},
+    {id:'m5',source:'slack',sender:'Theo Marchetti',channel:'#design-system',subject:'Calm palette + AA pass shipped',snippet:'Tokens v2 is live. Every text pair clears WCAG AA, including dark.',time:'Wed',unread:false,priority:'low',attachment:false,initials:'TM'},
+    {id:'m6',source:'telegram',sender:'Lena Fischer',channel:'',subject:'Offsite logistics',snippet:'Booked the quiet room for Thursday. Sending the agenda shortly.',time:'Wed',unread:false,priority:'normal',attachment:false,initials:'LF'},
+    {id:'m7',source:'email',sender:'Statements',channel:'',subject:'Your monthly statement is ready',snippet:'Preview redacted for privacy — open to view on this device.',time:'Tue',unread:false,priority:'low',attachment:false,initials:'ST',redacted:true}
+  ];
+
+  thread = {
+    messages:[
+      {id:1,who:'Mara Lindqvist',initials:'ML',time:'09:02',me:false,body:'Error rate on the gateway jumped to 4.1% right after the 14:02 deploy. I’m rolling it back now.'},
+      {id:2,who:'Priya N.',initials:'PN',time:'09:05',me:false,body:'Canary still has ~12% of traffic. Draining it before the rollback completes.'},
+      {id:3,who:'You',initials:'YO',time:'09:09',me:true,body:'Confirmed — canary is drained. Watching the dashboards, error rate is already back under 0.3%.'},
+      {id:4,who:'Mara Lindqvist',initials:'ML',time:'09:11',me:false,body:'Rollback done. Let’s keep the incident channel open another 30 minutes to be safe.'}
+    ]
+  };
+
+  commandGroups = [
+    {group:'Jump to',items:[
+      {label:'Inbox',hint:'G I',icon:'inbox',scope:''},
+      {label:'Email',hint:'',icon:'mail',scope:'source'},
+      {label:'Slack',hint:'',icon:'hash',scope:'source'},
+      {label:'Telegram',hint:'',icon:'send',scope:'source'}
+    ]},
+    {group:'Actions',items:[
+      {label:'Archive thread',hint:'E',icon:'archive',scope:''},
+      {label:'Snooze until…',hint:'S',icon:'clock',scope:''},
+      {label:'Mark resolved',hint:'⌘↵',icon:'check',scope:''},
+      {label:'Mute source',hint:'',icon:'mute',scope:''}
+    ]},
+    {group:'Privacy',items:[
+      {label:'Block remote content',hint:'',icon:'shield',scope:'on'},
+      {label:'Redact preview',hint:'',icon:'eye',scope:''},
+      {label:'Wipe local cache',hint:'',icon:'trash',scope:''}
+    ]}
+  ];
+
+  curDir(){ return this.state.direction ?? this.props.defaultDirection ?? 'slate'; }
+  curMode(){ return this.state.mode ?? this.props.defaultMode ?? 'light'; }
+  curDensity(){ return this.state.density ?? this.props.density ?? 'comfortable'; }
+
+  hexToRgb(h){ h=String(h).replace('#',''); if(h.length===3) h=h.split('').map(c=>c+c).join(''); const n=parseInt(h,16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+  relLum(rgb){ const f=c=>{ c/=255; return c<=0.03928? c/12.92 : Math.pow((c+0.055)/1.055,2.4); }; return 0.2126*f(rgb[0])+0.7152*f(rgb[1])+0.0722*f(rgb[2]); }
+  contrast(a,b){ const L1=this.relLum(this.hexToRgb(a)), L2=this.relLum(this.hexToRgb(b)); const hi=Math.max(L1,L2), lo=Math.min(L1,L2); return (hi+0.05)/(lo+0.05); }
+
+  buildTokens(dir,mode){
+    const d=this.DIRECTIONS[dir], N=d[mode], S=this.STATUS[mode];
+    const pad = this.curDensity()==='compact' ? '10px 12px' : '14px 16px';
+    return {
+      background:N.bg, color:N.text, fontFamily:d.fonts.ui, minHeight:'100vh', colorScheme: mode==='dark'?'dark':'light',
+      '--bg':N.bg,'--surface':N.surface,'--surface-2':N.surface2,'--surface-3':N.surface3,'--border':N.border,'--border-strong':N.borderStrong,
+      '--text':N.text,'--text-2':N.text2,'--text-3':N.text3,
+      '--accent':N.accent,'--accent-hover':N.accentHover,'--accent-soft':N.accentSoft,'--accent-ring':N.accentRing,'--accent-fg':N.accentFg,
+      '--success':S.success,'--success-soft':S.successSoft,'--warning':S.warning,'--warning-soft':S.warningSoft,'--danger':S.danger,'--danger-soft':S.dangerSoft,'--info':S.info,'--info-soft':S.infoSoft,
+      '--shadow-1':N.shadow1,'--shadow-2':N.shadow2,'--shadow-3':N.shadow3,'--skeleton':N.skeleton,'--skeleton-sheen':N.skeletonSheen,'--overlay':N.overlay,
+      '--r-chip':d.radius.chip+'px','--r-btn':d.radius.btn+'px','--r-card':d.radius.card+'px','--r-panel':d.radius.panel+'px',
+      '--font-ui':d.fonts.ui,'--font-head':d.fonts.head,'--font-mono':d.fonts.mono,'--head-weight':String(d.fonts.headWeight),'--head-tracking':d.fonts.headTracking,'--item-pad':pad
+    };
+  }
+
+  decorateInbox(dir,mode){
+    const N=this.DIRECTIONS[dir][mode], S=this.STATUS[mode];
+    const tone={urgent:{c:S.danger,b:S.dangerSoft},high:{c:S.warning,b:S.warningSoft}};
+    const sel=this.state.selected;
+    return this.inboxData.map(it=>{
+      const src=this.sources[it.source], t=tone[it.priority];
+      return Object.assign({},it,{
+        onOpen:()=>this.setState({selected:it.id}),
+        aria:it.sender+': '+it.subject+(it.unread?' (unread)':''),
+        sel: it.id===sel,
+        barColor: it.id===sel ? N.accent : 'transparent',
+        rowBg: it.id===sel ? N.surface2 : 'transparent',
+        sourceLabel:src.label, sourceIconPath:this.ICONS[src.icon], sourceColor:src[mode].color, sourceSoft:src[mode].soft,
+        prioPill: it.priority==='urgent'||it.priority==='high',
+        prioLabel:this.priorities[it.priority].label,
+        prioColor: t? t.c : N.text3, prioSoft: t? t.b : 'transparent',
+        senderWeight: it.unread?700:500, subjWeight: it.unread?600:500
+      });
+    });
+  }
+
+  threadView(dir,mode){
+    const N=this.DIRECTIONS[dir][mode];
+    return { messages:this.thread.messages.map(m=>Object.assign({},m,{
+      avatarBg: m.me? N.accentSoft : N.surface3,
+      avatarFg: m.me? N.accent : N.text2,
+      nameColor: m.me? N.accent : N.text
+    })) };
+  }
+
+  commandView(dir,mode){
+    const N=this.DIRECTIONS[dir][mode];
+    return this.commandGroups.map((g,gi)=>Object.assign({},g,{
+      items:g.items.map((c,ci)=>{
+        const active = gi===0 && ci===0;
+        return Object.assign({},c,{
+          iconPath:this.ICONS[c.icon],
+          rowBg: active? N.accentSoft : 'transparent',
+          iconColor: active? N.accent : N.text2,
+          labelColor: active? N.accent : N.text,
+          scopeChip: c.scope==='source'?'source': c.scope==='on'?'on':'',
+        });
+      })
+    }));
+  }
+
+  contrastPairs(dir,mode){
+    const N=this.DIRECTIONS[dir][mode], S=this.STATUS[mode];
+    // decorative=true → not subject to WCAG 1.4.11 (hairline divider, not a state indicator)
+    const mk=(label,fg,bg,thr,note,decorative=false)=>{
+      const r=this.contrast(fg,bg), pass=r>=thr;
+      let badge,bColor,bSoft;
+      if(decorative){ badge='Decorative'; bColor=N.text3; bSoft=N.surface3; }
+      else if(pass){ badge= thr>=4.5?'AA':'AA·3:1'; bColor=S.success; bSoft=S.successSoft; }
+      else { badge='Review'; bColor=S.warning; bSoft=S.warningSoft; }
+      return {label,fg,bg,ratio:r.toFixed(2),pass,thr,note,decorative,badge,bColor,bSoft,showCheck:pass&&!decorative};
+    };
+    return [
+      mk('Primary text', N.text, N.surface, 4.5, 'Body, on surface'),
+      mk('Secondary', N.text2, N.surface, 4.5, 'Meta & snippets'),
+      mk('Tertiary', N.text3, N.surface, 3, 'Large / non-essential · ≥3:1'),
+      mk('On accent', N.accentFg, N.accent, 4.5, 'Button label'),
+      mk('Accent', N.accent, N.surface, 4.5, 'Links & active icon'),
+      mk('Hairline border', N.borderStrong, N.surface, 3, 'Decorative divider · exempt', true)
+    ];
+  }
+
+  specData(dir,mode){
+    const d=this.DIRECTIONS[dir], N=d[mode], S=this.STATUS[mode];
+    const swatchGroups=[
+      {group:'Surfaces',sw:[
+        {name:'bg',val:N.bg,note:'App canvas'},{name:'surface',val:N.surface,note:'Cards, panels'},
+        {name:'surface-2',val:N.surface2,note:'Hover, rails'},{name:'surface-3',val:N.surface3,note:'Wells, chips'}
+      ]},
+      {group:'Text',sw:[
+        {name:'text',val:N.text,note:'Primary'},{name:'text-2',val:N.text2,note:'Secondary'},
+        {name:'text-3',val:N.text3,note:'Tertiary'},{name:'border',val:N.border,note:'Hairline'}
+      ]},
+      {group:'Accent (single)',sw:[
+        {name:'accent',val:N.accent,note:'Brand action'},{name:'accent-hover',val:N.accentHover,note:'Pressed'},
+        {name:'accent-soft',val:N.accentSoft,note:'Active bg'},{name:'accent-fg',val:N.accentFg,note:'On accent'}
+      ]},
+      {group:'Status (desaturated)',sw:[
+        {name:'success',val:S.success,note:'Secured'},{name:'warning',val:S.warning,note:'High prio'},
+        {name:'danger',val:S.danger,note:'Urgent / error'},{name:'info',val:S.info,note:'Neutral note'}
+      ]}
+    ];
+    const typeScale=[
+      {name:'Display',px:46,lh:'1.06',w:d.fonts.headWeight,font:'head',sample:'A calm home'},
+      {name:'Title',px:19,lh:'1.2',w:d.fonts.headWeight,font:'head',sample:'Inbox'},
+      {name:'Subtitle',px:16.5,lh:'1.3',w:600,font:'head',sample:'Thread subject'},
+      {name:'Body',px:14,lh:'1.55',w:400,font:'ui',sample:'Message body and snippets read here.'},
+      {name:'Label',px:13,lh:'1.4',w:500,font:'ui',sample:'Sender name'},
+      {name:'Caption',px:12,lh:'1.4',w:400,font:'ui',sample:'Meta · counts · helper text'},
+      {name:'Mono',px:11,lh:'1.4',w:500,font:'mono',sample:'#incident · 09:24 · ⌘K'}
+    ].map(t=>({...t,family:t.font==='head'?d.fonts.head:t.font==='mono'?d.fonts.mono:d.fonts.ui,
+      weight:String(t.w),tracking:t.font==='head'?d.fonts.headTracking:'0'}));
+    const spacing=[['1',4],['2',8],['3',12],['4',16],['5',20],['6',24],['8',32],['10',40]].map(([n,px])=>({name:n,px}));
+    const radii=[{name:'chip',px:d.radius.chip},{name:'btn',px:d.radius.btn},{name:'card',px:d.radius.card},{name:'panel',px:d.radius.panel}];
+    const shadows=[{name:'shadow-1',val:N.shadow1,note:'Resting card'},{name:'shadow-2',val:N.shadow2,note:'Floating screen'},{name:'shadow-3',val:N.shadow3,note:'Palette / modal'}];
+    return {swatchGroups,typeScale,spacing,radii,shadows};
+  }
+
+  renderVals(){
+    const dir=this.curDir(), mode=this.curMode(), N=this.DIRECTIONS[dir][mode];
+    const spec=this.specData(dir,mode);
+    return {
+      themeVars:this.buildTokens(dir,mode), dirKey:dir, modeKey:mode, isDark:mode==='dark', isLight:mode==='light',
+      directions:this.directions.map(d=>({ key:d.key, label:d.label, onSelect:()=>this.setState({direction:d.key}), active:d.key===dir,
+        fg: d.key===dir? N.text : N.text2, bg: d.key===dir? N.surface : 'transparent', sh: d.key===dir? N.shadow1 : 'none', fw: d.key===dir?600:500 })),
+      toggleMode:()=>this.setState({mode: mode==='light'?'dark':'light'}),
+      openPalette:()=>this.setState({paletteOpen:true}), closePalette:()=>this.setState({paletteOpen:false}),
+      stop:(e)=>{ e.stopPropagation(); }, paletteOpen:this.state.paletteOpen,
+      inbox:this.decorateInbox(dir,mode), thread:this.threadView(dir,mode), commands:this.commandView(dir,mode), a11y:this.contrastPairs(dir,mode),
+      swatchGroups:spec.swatchGroups, typeScale:spec.typeScale, spacing:spec.spacing, radii:spec.radii, shadows:spec.shadows,
+      skeletonRows:[1,2,3]
+    };
+  }
+}
+</script>
+</body>
+</html>

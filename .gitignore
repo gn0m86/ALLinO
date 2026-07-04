@@ -1,0 +1,38 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Database — never commit live data
+backend/data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment — never commit secrets
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# Frontend build artifacts
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db

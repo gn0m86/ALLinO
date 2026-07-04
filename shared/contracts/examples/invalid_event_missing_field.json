@@ -1,0 +1,7 @@
+﻿{
+  "eventId": "evt_001",
+  "tenantId": "tenant_001",
+  "sourceType": "mock",
+  "payload": {},
+  "schemaVersion": "1.0.0"
+}

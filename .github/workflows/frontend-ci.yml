@@ -1,0 +1,59 @@
+name: Frontend CI
+
+on:
+  push:
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-ci.yml"
+  pull_request:
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-ci.yml"
+
+jobs:
+  frontend-checks:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["20", "22"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --prefix frontend
+
+      - name: Dependency vulnerability scan (SCA)
+        run: npm audit --audit-level=high --prefix frontend
+
+      - name: Type check
+        run: |
+          set -o pipefail
+          npm run typecheck --prefix frontend | tee frontend-typecheck-${{ matrix.node-version }}.log
+
+      - name: Production build
+        run: |
+          set -o pipefail
+          npm run build --prefix frontend | tee frontend-build-${{ matrix.node-version }}.log
+        env:
+          NEXT_PUBLIC_BACKEND_URL: "http://localhost:8000"
+          NEXT_PUBLIC_TENANT_ID: "tenant_demo"
+
+      - name: Upload frontend CI logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-ci-logs-node${{ matrix.node-version }}
+          path: |
+            frontend-typecheck-${{ matrix.node-version }}.log
+            frontend-build-${{ matrix.node-version }}.log
+          retention-days: 14

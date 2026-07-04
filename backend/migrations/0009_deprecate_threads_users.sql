@@ -1,0 +1,17 @@
+-- Documentation-only migration. No schema change.
+--
+-- `threads` (from 0001_init.sql) is superseded by `messages.thread_key`
+-- (see 0007_thread_key.sql). Thread grouping is computed by
+-- services/normalizer.py and read directly off `messages` — nothing reads
+-- or writes the `threads` table. Do not add a threads_repo.py against it;
+-- if thread-level metadata (subject, external_thread_id) is needed later,
+-- extend `messages` or revisit this table deliberately, don't assume it's
+-- the live mechanism.
+--
+-- `users` (from 0001_init.sql) has no repository and no API. Auth in this
+-- project is env-based (ALLINO_API_KEY / ALLINO_JWT_SECRET), not backed by
+-- a user record. Do not start writing to this table without first deciding
+-- how it relates to JWT claims (see core/tenant.py, core/security.py).
+--
+-- Both tables are intentionally left in place (dropping is a destructive,
+-- confirm-first action) but are not part of the active read/write path.

@@ -1,0 +1,11 @@
+﻿{
+  "eventId": "evt_001",
+  "tenantId": "tenant_001",
+  "sourceType": "mock",
+  "externalId": "ext_001",
+  "timestamp": "2026-06-25T00:00:00Z",
+  "payload": {
+    "text": "hello"
+  },
+  "schemaVersion": "1.0.0"
+}

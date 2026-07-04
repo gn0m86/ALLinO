@@ -1,0 +1,24 @@
+﻿{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UnifiedEvent",
+  "type": "object",
+  "required": [
+    "eventId",
+    "tenantId",
+    "sourceType",
+    "externalId",
+    "timestamp",
+    "payload",
+    "schemaVersion"
+  ],
+  "properties": {
+    "eventId": {"type": "string"},
+    "tenantId": {"type": "string"},
+    "sourceType": {"type": "string"},
+    "externalId": {"type": "string"},
+    "timestamp": {"type": "string"},
+    "payload": {"type": "object"},
+    "schemaVersion": {"type": "string"}
+  },
+  "additionalProperties": true
+}

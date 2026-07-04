@@ -1,0 +1,8 @@
+-- SQLite does not support Row Level Security.
+-- This migration intentionally remains a no-op for local development.
+-- In PostgreSQL environment, replace with actual RLS policies, for example:
+--
+-- ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY messages_tenant_policy
+-- ON messages
+-- USING (tenant_id = current_setting('app.current_tenant_id'));
