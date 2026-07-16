@@ -5,7 +5,8 @@ import re
 from typing import Any, Literal
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from ..connectors.base import RetryPolicy
@@ -37,6 +38,11 @@ class GenericConnectorFieldMapping(BaseModel):
     externalId: str
     timestamp: str
     preview: str | None = None
+    # Locates the list of raw items nested inside a poll response or webhook body,
+    # for sources whose items live deeper than a top-level array or an
+    # "items"/"data"/"results" key (e.g. WhatsApp Business Cloud API's
+    # "entry[].changes[].value.messages[]"). See extract_items_from_payload().
+    items_path: str | None = None
 
 
 class GenericConnectorCreateRequest(BaseModel):
@@ -196,6 +202,10 @@ def _resolve_webhook_secret(slug: str) -> str | None:
     return get_secret_value(f"ALLINO_GENERIC_{slug_to_env_key(slug)}_WEBHOOK_SECRET")
 
 
+def _resolve_webhook_verify_token(slug: str) -> str | None:
+    return get_secret_value(f"ALLINO_GENERIC_{slug_to_env_key(slug)}_WEBHOOK_VERIFY_TOKEN")
+
+
 def _verify_signature(secret: str, body: bytes, signature_header: str | None) -> bool:
     if not signature_header:
         return False
@@ -205,6 +215,36 @@ def _verify_signature(secret: str, body: bytes, signature_header: str | None) ->
     provided = signature_header[len(prefix):].strip()
     expected = hmac.new(secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
     return hmac.compare_digest(provided, expected)
+
+
+@webhook_router.get("/webhooks/{connector_id}")
+def verify_webhook_subscription(
+    connector_id: str,
+    hub_mode: str | None = Query(default=None, alias="hub.mode"),
+    hub_challenge: str | None = Query(default=None, alias="hub.challenge"),
+    hub_verify_token: str | None = Query(default=None, alias="hub.verify_token"),
+) -> PlainTextResponse:
+    """Meta Graph API webhook-subscription handshake (used by WhatsApp Business
+    Cloud API among others): on subscribing a webhook URL, Meta issues this GET
+    with a verify token and expects `hub.challenge` echoed back verbatim once the
+    token matches. Opt-in per connector via ALLINO_GENERIC_{SLUG}_WEBHOOK_VERIFY_TOKEN
+    — connectors that don't configure one 404, same as before this endpoint existed."""
+    config = get_generic_connector(config_id=connector_id)
+    if config is None or not config["webhook_enabled"]:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+
+    expected_token = _resolve_webhook_verify_token(config["slug"])
+    if not expected_token:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+
+    if (
+        hub_mode != "subscribe"
+        or hub_challenge is None
+        or not hmac.compare_digest(hub_verify_token or "", expected_token)
+    ):
+        raise HTTPException(status_code=403, detail="Webhook verification failed")
+
+    return PlainTextResponse(hub_challenge)
 
 
 @webhook_router.post("/webhooks/{connector_id}")
@@ -230,10 +270,10 @@ async def receive_webhook_event(
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise HTTPException(status_code=400, detail="Invalid JSON payload") from exc
 
-    raw_items = extract_items_from_payload(payload)
     tenant_id = config["tenant_id"]
     slug = config["slug"]
     field_mapping = config["field_mapping"]
+    raw_items = extract_items_from_payload(payload, field_mapping.get("items_path"))
 
     events: list[dict[str, Any]] = []
     for item in raw_items:

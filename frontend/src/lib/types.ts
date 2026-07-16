@@ -123,6 +123,7 @@ export type GenericConnectorFieldMapping = {
   externalId: string;
   timestamp: string;
   preview?: string | null;
+  items_path?: string | null;
 };
 
 export type GenericConnectorConfig = {

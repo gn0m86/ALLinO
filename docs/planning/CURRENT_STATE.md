@@ -2147,21 +2147,106 @@ Telegram explicitly deferred:
   storage — a new connector architecture, not a token field) and explicitly
   chose to stay on Bot API rather than start it now.
 
+2026-07-16 — Sprint 32 opened and closed: Generic HTTP Connector nested-array
+extraction + Meta webhook verify handshake (unblocks WhatsApp Business/Viber
+without a dedicated connector):
+
+- User asked to check status and continue. The only in-flight item (Google
+  Calendar OAuth refresh-token support, `dev` commit `1ea0cc5`, still
+  unpromoted) is blocked on the user obtaining real Google Cloud Console
+  credentials. Every other previously-known gap had already been explicitly
+  deferred in past sessions. Asked via `AskUserQuestion` whether to wait or
+  pick something else; user said to choose ("Сам выбери и делай").
+- **Re-checked a load-bearing prior assumption before picking, using a
+  research subagent to read the actual code**: earlier sessions framed
+  WhatsApp/Viber as needing "a genuinely new connector architecture" because
+  they're webhook-push APIs. That's half-wrong — the Webhook Receiver
+  (`POST /webhooks/{connector_id}`, HMAC-verified) already exists (Sprint 10).
+  The real blocker was that `extract_items_from_payload()`/`extract_path()`
+  in `backend/app/connectors/generic_http_connector.py` couldn't reach
+  WhatsApp's doubly-nested `entry[].changes[].value.messages[]` shape (only
+  top-level arrays / flat `items`/`data`/`results` keys, no array indexing at
+  all — a comment already flagged this as "MVP"). Viber's flat single-event
+  payload was already ingestable as-is; its only real gap was
+  `_parse_timestamp` assuming epoch seconds when Viber sends milliseconds.
+- Fixed by generalizing the existing engine rather than writing dedicated
+  WhatsApp/Viber connector code — smaller, safer, and matches CLAUDE.md §5's
+  original intent ("adding a new source = registering a connector entry, not
+  writing Python code") for any future deeply-nested webhook source too:
+  - `extract_path()`: numeric segments now index into lists.
+  - `extract_items_from_payload()`: new optional `items_path` argument
+    (`[]`-suffixed dot-path segments iterate+flatten a list level).
+  - `_parse_timestamp()`: detects and converts millisecond epoch values;
+    wraps `fromtimestamp` in try/except (arbitrary external numeric
+    timestamps no longer able to raise an unhandled 500).
+  - `GenericConnectorFieldMapping` gained `items_path` — rides inside the
+    existing `field_mapping` JSON blob column, **no DB migration needed**.
+  - New `GET /webhooks/{connector_id}` handshake endpoint in
+    `api/generic_connectors.py`: echoes `hub.challenge` when
+    `hub.mode=subscribe` and `hub.verify_token` matches
+    `ALLINO_GENERIC_{SLUG}_WEBHOOK_VERIFY_TOKEN` (env-or-Vault, never in DB,
+    same pattern as the existing webhook HMAC secret). Required by Meta
+    Graph API webhooks (WhatsApp Business Cloud API included) before they'll
+    deliver to a URL at all; opt-in per connector, 404s exactly as before if
+    unconfigured.
+  - Frontend: new "Items path" field in the Add/Edit Custom Connector form
+    (`GenericConnectorsPanel.tsx`, `lib/types.ts`) — configurable entirely
+    through Settings.
+  - `.env.example` documents both new env keys.
+- Does NOT register an actual WhatsApp/Viber connector (needs the user's own
+  Meta App / Viber bot credentials, which don't exist in this project) and
+  does NOT add dedicated `whatsapp_connector.py`/`viber_connector.py` modules
+  — only closes the "can the existing generic engine ingest one of these
+  payloads at all" gap. Postgres/RLS, local AI classifier, Telegram MTProto,
+  JWT role management remain untouched and still deferred.
+- Verified: backend `pytest -q` => 422 passed (up from 396 — 26 new tests:
+  array-index extraction, WhatsApp-shaped nested-array extraction, ms-epoch
+  timestamp parsing, full webhook end-to-end for both WhatsApp- and
+  Viber-shaped payloads, GET handshake happy/wrong-token/unconfigured paths).
+  `ruff check app tests --select F,E9` clean. Frontend `tsc --noEmit` clean,
+  `npm run build` succeeds. **Live browser verification**: reproduced the
+  known dev-mode-only Settings-navigation quirk again on first try in
+  `next dev` (see Sprint 9/31), confirmed as sandbox/HMR-specific (not an app
+  bug) by switching to a production build, where Settings and the new form
+  field worked correctly first try; created and deleted a real WhatsApp-
+  shaped connector through the live UI against the real running dev backend,
+  confirming the new field persists correctly end-to-end. Full narrative:
+  `docs/planning/SPRINT32_TASK_BOARD.md`.
+
 ## 5) What to read first in a new session
 
 1. ../../CLAUDE.md
 2. ../../PROJECT_MASTER_BRIEF.md (sections 1.2, 1.3, 1.4)
 3. ./PREBUILD_SPEC_V1.md
 4. ./SPRINT_PLAN_W1_W2.md
-5. ./SPRINT31_TASK_BOARD.md (most recent closed board — Sprint 1-30 boards are historical)
+5. ./SPRINT32_TASK_BOARD.md (most recent closed board — Sprint 1-31 boards are historical)
 6. ./RELEASE_HARDENING_CHECKLIST_S6.md
 7. ./AGENT_START_TEMPLATE.md
 8. this file (CURRENT_STATE.md), especially the "Open items" note under section 4
 
 ## 6) Guardrails for next agents
 
-- **Read this bullet first — supersedes the Sprint 30 bullet immediately
-  below it**: Sprint 31 (2026-07-04) is the most recently closed board.
+- **Read this bullet first — supersedes the Sprint 31 bullet immediately
+  below it**: Sprint 32 (2026-07-16) is the most recently closed board. The
+  Generic HTTP Connector's field-extraction engine
+  (`backend/app/connectors/generic_http_connector.py`) now supports numeric
+  array-index path segments and an optional `items_path` (with `[]`-suffixed
+  flatten segments) for payloads whose items live deeper than a top-level
+  array — e.g. WhatsApp Business Cloud API's
+  `entry[].changes[].value.messages[]`. `_parse_timestamp` now also handles
+  millisecond epoch values (Viber). A new `GET /webhooks/{connector_id}`
+  answers the Meta Graph API webhook-subscription handshake
+  (`hub.challenge`/`hub.verify_token`), gated by an optional per-connector
+  `ALLINO_GENERIC_{SLUG}_WEBHOOK_VERIFY_TOKEN`. **Don't assume WhatsApp/Viber
+  still need a dedicated connector module** — the generic engine can now
+  ingest either shape via config alone (no DB migration, `items_path` rides
+  inside the existing `field_mapping` JSON blob); an actual WhatsApp/Viber
+  connector instance still needs to be registered by whoever has real Meta
+  App / Viber bot credentials, which nobody has done yet in this project.
+  See `docs/planning/SPRINT32_TASK_BOARD.md` for the full research finding
+  that motivated this (previous sessions' "needs a genuinely new
+  architecture" framing for these two sources was only half-right).
+- Sprint 31 (2026-07-04) is the previously-most-recent board.
   Built-in connector auto-sync is now genuinely multi-tenant: a
   `builtin_connector_secrets` DB table (Fernet-encrypted config blob, same
   as `messages.preview`) lets any tenant bring their own token for
