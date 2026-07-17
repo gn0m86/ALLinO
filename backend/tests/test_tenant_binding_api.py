@@ -84,3 +84,30 @@ def test_api_key_path_still_uses_request_tenant(tmp_path, monkeypatch) -> None:
 
     assert response.status_code == 200
     assert isinstance(response.json(), list)
+
+
+def test_missing_tenant_id_without_credentials_returns_401_not_400(tmp_path, monkeypatch) -> None:
+    # Regression test: resolve_tenant_id used to validate tenant_id's presence
+    # before any credential was checked, so an anonymous caller who simply
+    # omitted tenant_id got a 400 spelling out the exact expected request
+    # shape instead of a 401 -- auth must be checked first.
+    session.DB_PATH = tmp_path / "tenant_missing_no_auth.db"
+    monkeypatch.setattr(security, "ALLINO_API_KEY", "api-secret")
+    monkeypatch.setattr(security, "ALLINO_JWT_SECRET", None)
+
+    with TestClient(app) as client:
+        response = client.get("/api/v1/ingestion/inbox")
+
+    assert response.status_code == 401
+
+
+def test_missing_tenant_id_with_valid_credentials_returns_400(tmp_path, monkeypatch) -> None:
+    session.DB_PATH = tmp_path / "tenant_missing_with_auth.db"
+    monkeypatch.setattr(security, "ALLINO_API_KEY", "api-secret")
+    monkeypatch.setattr(security, "ALLINO_JWT_SECRET", None)
+
+    with TestClient(app) as client:
+        response = client.get("/api/v1/ingestion/inbox", headers={"X-API-Key": "api-secret"})
+
+    assert response.status_code == 400
+    assert "tenant_id is required" in response.json()["detail"]
