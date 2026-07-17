@@ -17,7 +17,7 @@ from .api.health import router as health_router
 from .api.ingestion import router as ingestion_router
 from .api.message_actions import router as message_actions_router
 from .api.replies import router as replies_router
-from .core.config import ALLINO_ALLOWED_ORIGINS
+from .core.config import ALLINO_ALLOWED_ORIGINS, ALLINO_ENV
 from .core import rate_limit
 from .core.crypto import validate_encryption_configuration
 from .core.security_headers import build_security_headers
@@ -33,7 +33,23 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     yield
 
 
-app = FastAPI(title="ALLinO Backend", version="0.1.0", lifespan=lifespan)
+def _docs_enabled_for_env(env: str) -> bool:
+    """Publicly reachable in dev for convenience; the full route/schema map is
+    recon value to an attacker in production, so it's turned off there --
+    same "closed by default" posture as everything else under CLAUDE.md's
+    security gate."""
+    return env != "production"
+
+
+_docs_enabled = _docs_enabled_for_env(ALLINO_ENV)
+app = FastAPI(
+    title="ALLinO Backend",
+    version="0.1.0",
+    lifespan=lifespan,
+    docs_url="/docs" if _docs_enabled else None,
+    redoc_url="/redoc" if _docs_enabled else None,
+    openapi_url="/openapi.json" if _docs_enabled else None,
+)
 
 allowed_origins = [o.strip() for o in ALLINO_ALLOWED_ORIGINS.split(",") if o.strip()]
 
