@@ -145,6 +145,37 @@ def _seed_rocketchat_message(client: TestClient, tenant_id: str = "tenant_demo")
     return "rocketchat-message-GENERAL:3001"
 
 
+def test_reply_rocketchat_uses_db_stored_credentials_when_env_unset(tmp_path, monkeypatch) -> None:
+    # Regression test: a tenant who configured Rocket.Chat via "Your Own
+    # Credentials" (DB-stored, Sprint 31) could sync fine but reply always
+    # 503'd, since send_reply only ever checked env vars for credentials.
+    session.DB_PATH = tmp_path / "reply_rocketchat_db_credentials.db"
+    monkeypatch.delenv("ALLINO_ROCKETCHAT_TOKEN", raising=False)
+    monkeypatch.delenv("ALLINO_ROCKETCHAT_USER_ID", raising=False)
+    monkeypatch.delenv("ALLINO_ROCKETCHAT_BASE_URL", raising=False)
+    monkeypatch.setitem(
+        replies_module._REPLY_SENDERS,
+        "rocketchat",
+        lambda **kwargs: {"success": True, "message": {"_id": "3002"}},
+    )
+
+    with TestClient(app) as client:
+        event_id = _seed_rocketchat_message(client)
+
+        secret_resp = client.post(
+            "/api/v1/ingestion/connectors/builtin/rocketchat/secret?tenant_id=tenant_demo",
+            json={"token": "rc-db-token", "user_id": "rc-db-user", "base_url": "https://chat.example.com"},
+        )
+        assert secret_resp.status_code == 200
+
+        resp = client.post(
+            f"/api/v1/ingestion/messages/{event_id}/reply?tenant_id=tenant_demo",
+            json={"text": "on it"},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["status"] == "sent"
+
+
 def test_reply_rocketchat_missing_extra_config_returns_503(tmp_path, monkeypatch) -> None:
     session.DB_PATH = tmp_path / "reply_rocketchat_no_extra_config.db"
     monkeypatch.setenv("ALLINO_ROCKETCHAT_TOKEN", "rc-token")

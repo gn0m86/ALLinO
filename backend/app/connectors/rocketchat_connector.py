@@ -168,13 +168,20 @@ def map_rocketchat_message_to_unified_event(
     }
 
 
-def send_rocketchat_reply(*, token: str, external_id: str, text: str) -> dict[str, Any]:
+def send_rocketchat_reply(
+    *,
+    token: str,
+    external_id: str,
+    text: str,
+    user_id: str | None = None,
+    base_url: str | None = None,
+) -> dict[str, Any]:
     channel, _, message_id = external_id.partition(":")
     if not channel:
         raise ValueError("Rocket.Chat external_id must be in 'channel:message_id' format")
 
-    user_id = get_secret_value("ALLINO_ROCKETCHAT_USER_ID")
-    base_url = (os.getenv("ALLINO_ROCKETCHAT_BASE_URL") or "").rstrip("/")
+    user_id = user_id or get_secret_value("ALLINO_ROCKETCHAT_USER_ID")
+    base_url = (base_url or os.getenv("ALLINO_ROCKETCHAT_BASE_URL") or "").rstrip("/")
     if not user_id or not base_url:
         raise RuntimeError(
             "Rocket.Chat reply requires ALLINO_ROCKETCHAT_USER_ID and ALLINO_ROCKETCHAT_BASE_URL"
