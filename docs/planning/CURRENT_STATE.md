@@ -1,6 +1,6 @@
 # ALLinO Current State
 
-Updated: 2026-06-25
+Updated: 2026-07-17
 Purpose: one-file handoff for future sessions and AI agents.
 
 ## 1) What is implemented now
@@ -2212,6 +2212,67 @@ without a dedicated connector):
   shaped connector through the live UI against the real running dev backend,
   confirming the new field persists correctly end-to-end. Full narrative:
   `docs/planning/SPRINT32_TASK_BOARD.md`.
+
+2026-07-17 — Reply-credentials bug + full non-destructive QA pass on the
+running prod stack, three small fixes:
+
+- **User-reported bug**: replying to a Rocket.Chat message from the live
+  Inbox always failed with `503 "Reply is not configured for source
+  'rocketchat'"`, even though the source synced fine (green in the
+  sidebar). Root cause: `send_reply` (`api/replies.py`) only ever checked
+  env/Vault (`get_secret_value`) for reply credentials, never the tenant's
+  own DB-stored `builtin_connector_secrets` row (Sprint 31 "Your Own
+  Credentials") — sync reads from both, reply only ever read env. Fixed by
+  adding a DB-secret fallback (`_resolve_reply_credentials`) and having
+  `send_rocketchat_reply` accept `user_id`/`base_url` as params instead of
+  reading them from env internally. Cherry-picked straight to `main`
+  (commit `bf4d6a5`) ahead of the still-unpromoted Sprint 32 / Calendar
+  OAuth `dev` commits, since those aren't ready to ship yet — first use of
+  the promote-cycle's cherry-pick path instead of a full `merge dev`.
+- User then asked for a full non-destructive security/QA pass against the
+  live prod instance ("тестировщик... подключился и сам протестировал").
+  Clarified scope first via `AskUserQuestion`: prod (not a spun-up dev
+  stand-in) but no destructive actions and no real messages sent to real
+  Rocket.Chat/Telegram contacts. Covered: security headers, CORS allow-list
+  behavior (incl. a disallowed-origin probe), auth enforcement on every
+  real route (via `openapi.json`, not the stale route list `python -c
+  "from app.main import app"` gives outside Docker), rate-limit wiring,
+  error-state rendering (Inbox/Settings degrade to a "Failed to load" +
+  Retry, no crash, when the backend is unreachable — confirmed via a
+  temporary `NEXT_PUBLIC_BACKEND_URL=host.docker.internal` frontend rebuild
+  for the browser sandbox, reverted immediately after), a11y basics in
+  `globals.css`, and `pip-audit`/`npm audit` (both clean).
+- Found two low-severity issues, fixed both after user confirmation:
+  1. `/docs`, `/redoc`, `/openapi.json` were publicly reachable with no
+     auth in every environment, including prod — free API recon (full
+     route/schema map, including admin action names) for anyone who can
+     reach the backend. Fixed: `main.py` now passes `docs_url=None` etc.
+     when `ALLINO_ENV == "production"` (`_docs_enabled_for_env` helper,
+     unit-tested directly rather than via app-reload gymnastics).
+  2. `resolve_tenant_id` (`core/tenant.py`) validated `tenant_id`'s
+     presence before any credential was checked, so a fully anonymous
+     caller who just omitted `tenant_id` got a `400` spelling out the
+     exact expected request shape, ahead of the real `401`. Not a bypass
+     (the per-endpoint permission dependency still gates everything, and
+     the same shape is public via `/openapi.json` in dev anyway) but wrong
+     order on principle. Fixed by calling `require_api_key` at the top of
+     `resolve_tenant_id` itself rather than reordering `Depends()` params
+     across the ~47 call sites — every specific permission function
+     already calls `require_api_key` first as its own first line, so this
+     doesn't duplicate the role/scope checks, just moves "is there a
+     credential at all" ahead of tenant-shape validation.
+- Verified: backend `pytest -q` => 428 passed (up from 423 — 5 new: 2 for
+  the reply-credentials DB fallback, 3 for docs-visibility, 2 for the
+  auth-before-tenant-validation ordering — note some tests were added
+  across the two `dev` sessions same day, see git log for the exact
+  split). `pip-audit`/`npm audit` both clean. No frontend changes this
+  session. Prod rebuilt and confirmed healthy after each promotion;
+  `docker compose ps` / `git status` both clean at session end.
+- Deliberately NOT done, flagged to the user instead of silently changed:
+  no live click-through with real Inbox data inside the browser-automation
+  sandbox — would need editing the hardcoded CORS origin in
+  `docker-compose.yml` for the sandbox's `host.docker.internal` origin,
+  judged as infra-change territory beyond "testing," not attempted.
 
 ## 5) What to read first in a new session
 
