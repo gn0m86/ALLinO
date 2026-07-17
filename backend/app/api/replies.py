@@ -14,6 +14,7 @@ from ..connectors.telegram_connector import send_telegram_reply
 from ..core.secrets import get_secret_value
 from ..core.security import require_ingestion_read_permission, require_reply_permission
 from ..core.tenant import resolve_tenant_id
+from ..db.repositories.builtin_connector_secrets_repo import get_builtin_connector_secret
 from ..db.repositories.messages_repo import get_message
 from ..db.repositories.outbound_replies_repo import append_outbound_reply, list_outbound_replies
 from ..services.audit import log_custom
@@ -58,6 +59,50 @@ _REPLY_EXTRA_CONFIG_ENV_KEYS: dict[str, list[str]] = {
 # message can't be replied to), not the 503 "not configured" path.
 _REQUIRES_REPLY_TARGET = {"github", "gitlab"}
 
+# Source-specific extra fields (beyond token) a reply send needs, read from a
+# tenant's own DB-stored builtin_connector_secrets config -- mirrors
+# connector_sync.BUILTIN_SOURCE_CONNECTOR_MAP's extra_fields for the sources
+# reply actually supports.
+_REPLY_EXTRA_CONFIG_FIELDS: dict[str, tuple[str, ...]] = {
+    "rocketchat": ("user_id", "base_url"),
+    "gitlab": ("base_url",),
+    "jira": ("base_url",),
+}
+
+
+def _resolve_reply_credentials(source: str, tenant_id: str) -> dict[str, str] | None:
+    """Env/Vault first (the original single-tenant path), falling back to the
+    tenant's own DB-stored builtin connector secret (Sprint 31 "Your Own
+    Credentials") if no env token is set. Sync already reads from the DB
+    secret via connector_sync.py -- reply never did, so a tenant using only
+    DB-stored credentials could sync but never got a working reply."""
+    token = get_secret_value(_REPLY_TOKEN_ENV_KEYS[source])
+    extra_missing = any(
+        not get_secret_value(key) for key in _REPLY_EXTRA_CONFIG_ENV_KEYS.get(source, [])
+    )
+    if token and not extra_missing:
+        creds = {"token": token}
+        if source == "rocketchat":
+            creds["user_id"] = get_secret_value("ALLINO_ROCKETCHAT_USER_ID") or ""
+            creds["base_url"] = get_secret_value("ALLINO_ROCKETCHAT_BASE_URL") or ""
+        return creds
+
+    row = get_builtin_connector_secret(tenant_id=tenant_id, source_type=source)
+    if row is None:
+        return None
+    config = row["config"]
+    db_token = config.get("token")
+    if not db_token:
+        return None
+    required_extra = _REPLY_EXTRA_CONFIG_FIELDS.get(source, ())
+    if source == "rocketchat" and not all(config.get(field) for field in required_extra):
+        return None
+    creds = {"token": db_token}
+    for field in required_extra:
+        if config.get(field):
+            creds[field] = config[field]
+    return creds
+
 
 class ReplyRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -85,16 +130,16 @@ def send_reply(
             detail=f"This '{source}' message can't be replied to (no reply target recorded for it)",
         )
 
-    token = get_secret_value(_REPLY_TOKEN_ENV_KEYS[source])
-    extra_missing = any(
-        not get_secret_value(key) for key in _REPLY_EXTRA_CONFIG_ENV_KEYS.get(source, [])
-    )
-    if not token or extra_missing:
+    creds = _resolve_reply_credentials(source, tenant_id)
+    if creds is None:
         raise HTTPException(status_code=503, detail=f"Reply is not configured for source '{source}'")
 
-    send_kwargs: dict[str, Any] = {"token": token, "external_id": message.external_id, "text": payload.text}
+    send_kwargs: dict[str, Any] = {"token": creds["token"], "external_id": message.external_id, "text": payload.text}
     if source in _REQUIRES_REPLY_TARGET:
         send_kwargs["reply_target"] = message.reply_target
+    for field in _REPLY_EXTRA_CONFIG_FIELDS.get(source, ()):
+        if creds.get(field):
+            send_kwargs[field] = creds[field]
 
     try:
         _REPLY_SENDERS[source](**send_kwargs)
