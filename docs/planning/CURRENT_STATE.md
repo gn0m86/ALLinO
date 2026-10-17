@@ -2274,6 +2274,64 @@ running prod stack, three small fixes:
   `docker-compose.yml` for the sandbox's `host.docker.internal` origin,
   judged as infra-change territory beyond "testing," not attempted.
 
+2026-10-17 — Full project health check (user: "проверь полностью проект,
+почини, доведи до рабочего состояния"), fixes in `dev`, not yet promoted:
+
+- State found: prod stack stopped since 2026-07-30 (all containers stopped
+  together 24s after a start — host/Docker shutdown, not an app crash);
+  `scheduler_worker`/`event_bus_worker`/`frontend` prod images still from
+  2026-07-04 (later promotes only rebuilt `backend`) — next promote must be a
+  full `docker compose up -d --build`. `dev` still holds the unpromoted
+  Calendar OAuth + Sprint 32 commits. No git remote, so `.github/workflows`
+  have never actually run — local checks are the only gate.
+- Dependencies: `pip-audit`/`npm audit` were no longer clean (PyJWT 2.13.0 —
+  14 advisories, cryptography 49.0.0, Next.js 16.2.9 critical incl. RCE/SSRF
+  advisories, plus postcss/sharp/nanoid/source-map-js). Bumped PyJWT 2.15.1,
+  cryptography 50.0.2, next 16.3.8 (postcss override 8.5.23); every changed
+  package pinned to a release ≥2 weeks old. Both audits clean again.
+- Fixed:
+  1. Telegram bot token leak: httpx's `HTTPStatusError` text embeds the request
+     URL, and the Bot API puts the token in the URL path — any 4xx/5xx would
+     have persisted the token into `connectors.last_error`, `connector_runs`
+     and the append-only audit log. `_raise_for_status_redacted` in
+     `telegram_connector.py` masks it (still an `HTTPStatusError`, retry
+     classification unchanged). Plaintext scan of the prod DB found no
+     occurrence; encrypted columns could not be checked (decrypting prod data
+     was not permitted).
+  2. Audit-log bloat: `process_connector_batch` wrote a `.event` audit row for
+     every re-fetched duplicate on every poll — prod had 441k
+     `connector.rocketchat.sync.event` rows, DB 237 MB, for 801 messages. Now
+     only inserted events get a per-event row; the `.batch` row keeps the
+     duplicate count. Existing rows stay (append-only trigger) — reclaiming
+     that space is a separate, destructive decision for the user.
+  3. API key compared with `==` (timing side channel) in 6 places in
+     `core/security.py` → one `_api_key_matches` helper using
+     `hmac.compare_digest`.
+  4. Sprint 32 webhook receiver only read `X-Webhook-Signature`; real Meta
+     (WhatsApp) sends `X-Hub-Signature-256`, Viber sends
+     `X-Viber-Content-Signature` (bare hex) — real deliveries would all have
+     401'd. Both accepted now (same per-connector secret); tests switched to
+     the real headers.
+  5. Workers ignored SIGTERM as PID 1 → `docker stop` waited 10s then
+     SIGKILLed mid-sync (prod exit codes 137). SIGTERM handler → exit 0 in
+     ~0.6s, verified with `docker stop`.
+  6. Frontend: nav items didn't close Search/Archived/Digest (list column stuck
+     on them in every mode); Security Center ignored timezone/12-24h prefs and
+     parsed SQLite's zone-less `created_at` as local time (3h off for UTC+3);
+     thread SecurityCard/ReplyComposer claimed "TLS 1.3" unconditionally
+     (default setup is plain http) — now derived from `NEXT_PUBLIC_BACKEND_URL`
+     (`describeBackendTransport`); 401 on first inbox load now says to enter
+     the key in Settings → Backend Access.
+  7. Infra: Redis published on `0.0.0.0:6379` with no password → bound to
+     `127.0.0.1`; frontend image `node:20` (EOL) → `node:22`; backend image
+     `python:3.11` → `3.13` (what tests/dev venv actually run); CI node matrix
+     22/24.
+- Verified: `pytest` 431 passed (3 new), ruff F/E9 clean, `tsc`/`next build`
+  clean, live browser pass on a throwaway DB with auth enforced (no console
+  errors), and a full isolated `docker compose -p allino-devcheck` build+run
+  (all services healthy, Python 3.13 / Node 22, `/docs` 404 in production,
+  401 without key) — torn down afterwards, prod volume untouched.
+
 ## 5) What to read first in a new session
 
 1. ../../CLAUDE.md

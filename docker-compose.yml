@@ -70,7 +70,9 @@ services:
     image: redis:7-alpine
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      # Host-local only: Redis has no password, and the containers reach it over
+      # the compose network anyway -- this mapping is just for native dev runs.
+      - "127.0.0.1:6379:6379"
 
   event_bus_worker:
     build:
