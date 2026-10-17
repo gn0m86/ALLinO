@@ -25,6 +25,23 @@ export const RUNTIME_CONFIG = {
   tenantId: TENANT_ID,
 };
 
+// What the browser -> backend hop actually is, for the security labels in
+// ThreadPanel/ReplyComposer (which used to claim "TLS 1.3" unconditionally,
+// even for the default plain-http docker-compose setup).
+export function describeBackendTransport(): { label: string; secure: boolean } {
+  let url: URL;
+  try {
+    url = new URL(BACKEND_URL);
+  } catch {
+    return { label: "Unknown", secure: false };
+  }
+  if (url.protocol === "https:") return { label: "HTTPS (TLS) · in transit", secure: true };
+  if (["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)) {
+    return { label: "Local connection · this device", secure: true };
+  }
+  return { label: "Plain HTTP · not encrypted", secure: false };
+}
+
 const API_KEY_STORAGE_KEY = "allino_api_key";
 
 export function getStoredApiKey(): string | null {
@@ -247,6 +264,11 @@ export async function fetchInboxPage(
   });
 
   if (!response.ok) {
+    // The inbox is the first request a fresh browser makes -- point a missing
+    // or wrong key at the place to fix it instead of a bare status code.
+    if (response.status === 401) {
+      throw new Error("Not authorized (401): enter the backend API key in Settings → Backend Access");
+    }
     throw new Error(`Failed to load inbox page: ${response.status}`);
   }
 

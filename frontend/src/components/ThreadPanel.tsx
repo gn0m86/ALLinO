@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react"
 
-import { archiveMessage, snoozeMessage } from "../lib/api"
+import { archiveMessage, describeBackendTransport, getStoredApiKey, snoozeMessage } from "../lib/api"
 import { getDisplayPreview, getDisplayTitle } from "../lib/chatPreview"
 import { formatClockCluster, formatShort, useTimePrefs } from "../lib/timePrefs"
 import { ConnectorRun, ConnectorStatus, InboxMessage } from "../lib/types"
 import { AttachmentViewer } from "./AttachmentViewer"
 import { ConnectorOpsPanel } from "./ConnectorOpsPanel"
-import { ShieldCheck } from "./Icons"
+import { AlertIcon, ShieldCheck } from "./Icons"
 import { ReplyComposer } from "./ReplyComposer"
 
 type Props = {
@@ -70,6 +70,10 @@ function getInitials(externalId: string): string {
 
 function SecurityCard({ source }: { source: string }) {
 	const src = getSource(source)
+	const transport = describeBackendTransport()
+	// Only rendered client-side (needs a selected message), so reading
+	// localStorage here can't cause a hydration mismatch.
+	const identity = getStoredApiKey() ? "API key verified" : "No API key (dev mode)"
 	return (
 		<div
 			style={{
@@ -96,18 +100,18 @@ function SecurityCard({ source }: { source: string }) {
 						width: 24,
 						height: 24,
 						borderRadius: "var(--r-chip)",
-						background: "var(--success-soft)",
-						color: "var(--success)",
+						background: transport.secure ? "var(--success-soft)" : "var(--warning-soft)",
+						color: transport.secure ? "var(--success)" : "var(--warning)",
 						display: "flex",
 						alignItems: "center",
 						justifyContent: "center",
 						flexShrink: 0,
 					}}
 				>
-					<ShieldCheck size={14} />
+					{transport.secure ? <ShieldCheck size={14} /> : <AlertIcon size={14} />}
 				</div>
 				<span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text)", flex: 1 }}>
-					Conversation secured
+					{transport.secure ? "Conversation secured" : "Connection not encrypted"}
 				</span>
 				<span
 					style={{
@@ -133,8 +137,8 @@ function SecurityCard({ source }: { source: string }) {
 				}}
 			>
 				{[
-					{ label: "Transport",  value: "TLS 1.3 · in transit" },
-					{ label: "Identity",   value: "API key verified" },
+					{ label: "Transport",  value: transport.label },
+					{ label: "Identity",   value: identity },
 					{ label: "Content",    value: "Remote media blocked" },
 					{ label: "Retention",  value: "Local store only" },
 				].map((fact, i) => (
