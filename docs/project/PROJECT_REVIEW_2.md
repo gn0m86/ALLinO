@@ -13,13 +13,13 @@ Overall verdict: **direction is right, pace is the risk.** Connector breadth (Wa
 
 ### 1.1 Tenant isolation is caller-asserted, not credential-bound
 
-[backend/app/core/tenant.py](backend/app/core/tenant.py#L4-L14) resolves `tenant_id` purely from the `X-Tenant-Id` header or `tenant_id` query param — a plain string, unchecked against the caller's identity.
+[backend/app/core/tenant.py](../../backend/app/core/tenant.py#L4-L14) resolves `tenant_id` purely from the `X-Tenant-Id` header or `tenant_id` query param — a plain string, unchecked against the caller's identity.
 
 There is exactly one shared `ALLINO_API_KEY` (or one JWT secret) for the whole deployment. Any caller holding that one key/token can put **any** tenant_id in the header and get full read/write access to that tenant's inbox, audit log, metrics, and connector registry. The repositories do filter `WHERE tenant_id = ?` correctly, but nothing upstream of that stops a caller from choosing which tenant's data to query.
 
 This is not a hypothetical gap — it's explicitly called out as a P0 control in `PROJECT_MASTER_BRIEF.md` line 605 (`BE-05 Tenant Isolation: tenantId из JWT, не request` → "tenantId извлекается ТОЛЬКО из JWT claims"). The current implementation does the opposite of what the brief specifies: tenant_id comes from the request, never from JWT claims, and JWT payloads aren't even inspected for a tenant claim.
 
-[backend/tests/test_tenant_isolation.py](backend/tests/test_tenant_isolation.py) only proves that two different `tenant_id` arguments passed directly to repo functions return disjoint rows — it never goes through the API/auth layer, so it can't catch this. There is no test anywhere that asserts "caller authenticated for tenant A cannot read tenant B by changing a header."
+[backend/tests/test_tenant_isolation.py](../../backend/tests/test_tenant_isolation.py) only proves that two different `tenant_id` arguments passed directly to repo functions return disjoint rows — it never goes through the API/auth layer, so it can't catch this. There is no test anywhere that asserts "caller authenticated for tenant A cannot read tenant B by changing a header."
 
 This was not flagged in review #1 because review #1 pre-dates JWT work; it became a live cross-tenant IDOR risk specifically once a shared JWT/API key started covering multiple tenants.
 
@@ -34,7 +34,7 @@ ALLINO_ALLOW_INSECURE_DEV: bool = os.getenv(..., "true")          # config.py:43
 ```
 `core/security.py`'s `require_api_key` only raises (503) when *both* no secret is configured *and* `ALLINO_ENV != "development"` *or* `ALLINO_ALLOW_INSECURE_DEV` is false. Both defaults point the same direction: insecure-allowed.
 
-[docker-compose.yml](docker-compose.yml#L9-L13) — the one place meant to represent a "shared/prod-like" deployment — sets `ALLINO_ALLOWED_ORIGINS`, `ALLINO_DB_PATH`, and `ALLINO_API_KEY: "${ALLINO_API_KEY:-}"` (empty by default) but never sets `ALLINO_ENV` or `ALLINO_ALLOW_INSECURE_DEV`. So: `docker compose up` with no `.env` file gives you a fully open backend, silently, with zero warnings visible outside a log line.
+[docker-compose.yml](../../docker-compose.yml#L9-L13) — the one place meant to represent a "shared/prod-like" deployment — sets `ALLINO_ALLOWED_ORIGINS`, `ALLINO_DB_PATH`, and `ALLINO_API_KEY: "${ALLINO_API_KEY:-}"` (empty by default) but never sets `ALLINO_ENV` or `ALLINO_ALLOW_INSECURE_DEV`. So: `docker compose up` with no `.env` file gives you a fully open backend, silently, with zero warnings visible outside a log line.
 
 CURRENT_STATE.md (2026-07-01 entry) describes this as "fail-closed when `ALLINO_API_KEY` is missing outside explicitly allowed local dev mode" — but "explicitly allowed" is the untouched default, not something an operator has to opt into. The security gate item is only as strong as its config defaults, and right now the defaults are exactly backwards from what "fail-closed" implies.
 
@@ -44,9 +44,9 @@ CURRENT_STATE.md (2026-07-01 entry) describes this as "fail-closed when `ALLINO_
 
 ### 1.3 The "event bus" doesn't decouple anything — it's a synchronous round-trip
 
-Review #1 §3.1 flagged: ingestion is fully synchronous inside the HTTP request, no queue, no backpressure. `CURRENT_STATE.md` (S3-04) reports this closed via `services/event_bus.py` with a Redis Streams path. Reading [event_bus.py](backend/app/services/event_bus.py#L48-L84): in `redis_stream` mode, the code does `xadd` for every event and then **immediately** `xrange`s each entry back out, in the same function call, then hands the same list to the same synchronous `processor`. There is no separate consumer, no worker process, nothing reads the stream asynchronously.
+Review #1 §3.1 flagged: ingestion is fully synchronous inside the HTTP request, no queue, no backpressure. `CURRENT_STATE.md` (S3-04) reports this closed via `services/event_bus.py` with a Redis Streams path. Reading [event_bus.py](../../backend/app/services/event_bus.py#L48-L84): in `redis_stream` mode, the code does `xadd` for every event and then **immediately** `xrange`s each entry back out, in the same function call, then hands the same list to the same synchronous `processor`. There is no separate consumer, no worker process, nothing reads the stream asynchronously.
 
-The Sprint 3 task board's own DoD for S3-04 lists "consumer worker baseline (local mode)" as part of the deliverable ([SPRINT3_TASK_BOARD.md:100](docs/planning/SPRINT3_TASK_BOARD.md#L100)) — that worker doesn't exist. What exists is Redis used as a write-then-immediately-read buffer inside one request, which adds latency and a new failure mode (network hop to Redis) without providing any of the actual benefit (async processing, backpressure relief, per-event retry, multiple consumers) that was the point of moving off synchronous processing in the first place.
+The Sprint 3 task board's own DoD for S3-04 lists "consumer worker baseline (local mode)" as part of the deliverable ([SPRINT3_TASK_BOARD.md:100](../../docs/planning/SPRINT3_TASK_BOARD.md#L100)) — that worker doesn't exist. What exists is Redis used as a write-then-immediately-read buffer inside one request, which adds latency and a new failure mode (network hop to Redis) without providing any of the actual benefit (async processing, backpressure relief, per-event retry, multiple consumers) that was the point of moving off synchronous processing in the first place.
 
 `test_event_bus.py` only exercises the `direct` and `redis_fallback` (no-redis-installed) branches — nothing exercises the actual `redis_stream` branch, so this was never actually verified end-to-end even in the sense the code allows.
 
@@ -79,7 +79,7 @@ None of these five ❌ rows appear as open items in `CURRENT_STATE.md`, in any `
 
 ### 3.1 Connector token still accepted in JSON body, not just header
 
-`CURRENT_STATE.md` (2026-07-01) says log sanitization + `X-Connector-Token` header closed the T-07 token-in-logs concern from review #1 §5.1. Looking at the actual endpoints (e.g. [ingestion.py:356-374](backend/app/api/ingestion.py#L356-L374)):
+`CURRENT_STATE.md` (2026-07-01) says log sanitization + `X-Connector-Token` header closed the T-07 token-in-logs concern from review #1 §5.1. Looking at the actual endpoints (e.g. [ingestion.py:356-374](../../backend/app/api/ingestion.py#L356-L374)):
 ```python
 connector_token = x_connector_token or payload.token
 ```
@@ -87,12 +87,12 @@ connector_token = x_connector_token or payload.token
 
 ### 3.2 Permission-dependency fallthrough is confusing, currently masked by router-level ordering
 
-[security.py:112-113](backend/app/core/security.py#L112-L113) and the equivalent block in `require_ingestion_read_permission`:
+[security.py:112-113](../../backend/app/core/security.py#L112-L113) and the equivalent block in `require_ingestion_read_permission`:
 ```python
 if not ALLINO_JWT_SECRET:
     return
 ```
-Read literally: if JWT isn't configured, the function allows the request — regardless of whether an API key was even supplied or matched. This is safe **today** only because `require_api_key` is a router-level dependency ([ingestion.py:37-41](backend/app/api/ingestion.py#L37-L41)) that always runs first and already rejects unauthenticated callers before this function is reached. If anyone ever adds a new router/route that uses `require_connector_sync_permission` or `require_ingestion_read_permission` without also including `require_api_key`, it becomes a silent auth bypass. Worth a comment in the code (or a defensive re-check of the API key) so the safety property doesn't depend on remembering to wire two dependencies together correctly forever.
+Read literally: if JWT isn't configured, the function allows the request — regardless of whether an API key was even supplied or matched. This is safe **today** only because `require_api_key` is a router-level dependency ([ingestion.py:37-41](../../backend/app/api/ingestion.py#L37-L41)) that always runs first and already rejects unauthenticated callers before this function is reached. If anyone ever adds a new router/route that uses `require_connector_sync_permission` or `require_ingestion_read_permission` without also including `require_api_key`, it becomes a silent auth bypass. Worth a comment in the code (or a defensive re-check of the API key) so the safety property doesn't depend on remembering to wire two dependencies together correctly forever.
 
 ### 3.3 `threads` and `users` tables: still dead, now orphaned by design (not just unfinished)
 
@@ -108,7 +108,7 @@ Review #1 §3.3 flagged `users` and `connectors` as schema without repositories.
 
 ## 4. Things review #1 flagged that are now genuinely fixed (verified against code, not just docs)
 
-- Mode-based inbox filtering (`focus`/`incident` → priority filter) is real: [page.tsx:198-206](frontend/src/app/page.tsx#L198-L206) actually derives `filters` from `mode`, not just a label (review #1 §6.1 is closed).
+- Mode-based inbox filtering (`focus`/`incident` → priority filter) is real: [page.tsx:198-206](../../frontend/src/app/page.tsx#L198-L206) actually derives `filters` from `mode`, not just a label (review #1 §6.1 is closed).
 - Wave 1 Core discrepancy (Jira/Telegram missing from Sprint 2, review #1 §4.1) is resolved — both shipped in Sprint 3 (S3-01, S3-02), confirmed in `CURRENT_STATE.md` and connector files exist with tests.
 - `test_ingestion_idempotency.py`, `threads`-adjacent thread linking, error/empty states, frontend CI — all confirmed present and non-trivial, not just filenames.
 - Test count claims are accurate: ran `pytest -q` directly → **110 passed**, matching the number in `CURRENT_STATE.md`'s last entry.

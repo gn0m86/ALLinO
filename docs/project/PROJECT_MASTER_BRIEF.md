@@ -43,21 +43,21 @@
 ### 1.1) Каноничные файлы ответов
 
 Для шагов 1-3 используем как главный источник отдельные файлы в папке
-[docs/agent-answers/incoming](docs/agent-answers/incoming).
+[docs/agent-answers/incoming](../../docs/agent-answers/incoming).
 
 | Шаг                           | Файл                                                                                                                               | Статус   |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| 1. Product Strategist         | [docs/agent-answers/incoming/unified-inbox-strategy-v2.md](docs/agent-answers/incoming/unified-inbox-strategy-v2.md)               | Загружен |
-| 2. Security Architect         | [docs/agent-answers/incoming/security-blueprint-unified-inbox.md](docs/agent-answers/incoming/security-blueprint-unified-inbox.md) | Загружен |
-| 3. API Integrations Architect | [docs/agent-answers/incoming/unified-inbox-integration-matrix.md](docs/agent-answers/incoming/unified-inbox-integration-matrix.md) | Загружен |
-| 4. UX/IA Architect            | [docs/agent-answers/incoming/unified-inbox-ux-ia.md](docs/agent-answers/incoming/unified-inbox-ux-ia.md)                           | Загружен |
-| 5. Technical Architect        | [docs/agent-answers/incoming/unified-inbox-architecture.md](docs/agent-answers/incoming/unified-inbox-architecture.md)             | Загружен |
-| 6. Design System (variant 1)  | [docs/agent-answers/incoming/secureinbox-design-spec.md](docs/agent-answers/incoming/secureinbox-design-spec.md)                   | Загружен |
+| 1. Product Strategist         | [docs/agent-answers/incoming/unified-inbox-strategy-v2.md](../../docs/agent-answers/incoming/unified-inbox-strategy-v2.md)               | Загружен |
+| 2. Security Architect         | [docs/agent-answers/incoming/security-blueprint-unified-inbox.md](../../docs/agent-answers/incoming/security-blueprint-unified-inbox.md) | Загружен |
+| 3. API Integrations Architect | [docs/agent-answers/incoming/unified-inbox-integration-matrix.md](../../docs/agent-answers/incoming/unified-inbox-integration-matrix.md) | Загружен |
+| 4. UX/IA Architect            | [docs/agent-answers/incoming/unified-inbox-ux-ia.md](../../docs/agent-answers/incoming/unified-inbox-ux-ia.md)                           | Загружен |
+| 5. Technical Architect        | [docs/agent-answers/incoming/unified-inbox-architecture.md](../../docs/agent-answers/incoming/unified-inbox-architecture.md)             | Загружен |
+| 6. Design System (variant 1)  | [docs/agent-answers/incoming/secureinbox-design-spec.md](../../docs/agent-answers/incoming/secureinbox-design-spec.md)                   | Загружен |
 
 ### 1.2) Нормализация v1 (шаги 1-3)
 
 Этот блок фиксирует согласованные решения по текущим ответам.
-Исходные файлы в [docs/agent-answers/incoming](docs/agent-answers/incoming) не редактируются.
+Исходные файлы в [docs/agent-answers/incoming](../../docs/agent-answers/incoming) не редактируются.
 
 #### A. Product/Scope baseline
 
@@ -86,7 +86,7 @@
 ### 1.3) Нормализация v2 (шаги 4-6)
 
 Этот блок фиксирует согласованные решения по UX, архитектуре и первому дизайн-варианту.
-Исходные файлы в [docs/agent-answers/incoming](docs/agent-answers/incoming) не редактируются.
+Исходные файлы в [docs/agent-answers/incoming](../../docs/agent-answers/incoming) не редактируются.
 
 #### A. UX/IA baseline
 
@@ -139,17 +139,17 @@
 
 ### 1.4) Execution Docs
 
-1. Pre-build baseline: [docs/planning/PREBUILD_SPEC_V1.md](docs/planning/PREBUILD_SPEC_V1.md)
-2. Sprint plan (W1-W2): [docs/planning/SPRINT_PLAN_W1_W2.md](docs/planning/SPRINT_PLAN_W1_W2.md)
-3. Sprint 1 task board: [docs/planning/SPRINT1_TASK_BOARD.md](docs/planning/SPRINT1_TASK_BOARD.md)
-4. Sprint 2 task board: [docs/planning/SPRINT2_TASK_BOARD.md](docs/planning/SPRINT2_TASK_BOARD.md)
-5. Kickoff checklist: [docs/planning/IMPLEMENTATION_KICKOFF_CHECKLIST.md](docs/planning/IMPLEMENTATION_KICKOFF_CHECKLIST.md)
-6. Sprint 1 scaffolding plan: [docs/planning/SPRINT1_SCAFFOLDING_PLAN.md](docs/planning/SPRINT1_SCAFFOLDING_PLAN.md)
-7. AI agent rules: [CLAUDE.md](CLAUDE.md)
-8. Dev quickstart: [docs/planning/DEV_QUICKSTART.md](docs/planning/DEV_QUICKSTART.md)
-9. Smoke runbook: [docs/planning/SMOKE_RUNBOOK.md](docs/planning/SMOKE_RUNBOOK.md)
-10. Current state handoff: [docs/planning/CURRENT_STATE.md](docs/planning/CURRENT_STATE.md)
-11. Agent start template (60 sec): [docs/planning/AGENT_START_TEMPLATE.md](docs/planning/AGENT_START_TEMPLATE.md)
+1. Pre-build baseline: [docs/planning/PREBUILD_SPEC_V1.md](../../docs/planning/PREBUILD_SPEC_V1.md)
+2. Sprint plan (W1-W2): [docs/planning/SPRINT_PLAN_W1_W2.md](../../docs/planning/SPRINT_PLAN_W1_W2.md)
+3. Sprint 1 task board: [docs/planning/SPRINT1_TASK_BOARD.md](../../docs/planning/SPRINT1_TASK_BOARD.md)
+4. Sprint 2 task board: [docs/planning/SPRINT2_TASK_BOARD.md](../../docs/planning/SPRINT2_TASK_BOARD.md)
+5. Kickoff checklist: [docs/planning/IMPLEMENTATION_KICKOFF_CHECKLIST.md](../../docs/planning/IMPLEMENTATION_KICKOFF_CHECKLIST.md)
+6. Sprint 1 scaffolding plan: [docs/planning/SPRINT1_SCAFFOLDING_PLAN.md](../../docs/planning/SPRINT1_SCAFFOLDING_PLAN.md)
+7. AI agent rules: [CLAUDE.md](../../CLAUDE.md)
+8. Dev quickstart: [docs/planning/DEV_QUICKSTART.md](../../docs/planning/DEV_QUICKSTART.md)
+9. Smoke runbook: [docs/planning/SMOKE_RUNBOOK.md](../../docs/planning/SMOKE_RUNBOOK.md)
+10. Current state handoff: [docs/planning/CURRENT_STATE.md](../../docs/planning/CURRENT_STATE.md)
+11. Agent start template (60 sec): [docs/planning/AGENT_START_TEMPLATE.md](../../docs/planning/AGENT_START_TEMPLATE.md)
 
 ---
 
@@ -183,7 +183,7 @@
 #### Ответ агента (вставь сюда)
 
 Каноничный источник для шага 1:
-[docs/agent-answers/incoming/unified-inbox-strategy-v2.md](docs/agent-answers/incoming/unified-inbox-strategy-v2.md)
+[docs/agent-answers/incoming/unified-inbox-strategy-v2.md](../../docs/agent-answers/incoming/unified-inbox-strategy-v2.md)
 
 # Unified Inbox — Product Strategy v2
 
@@ -452,7 +452,7 @@ unified-inbox/
 #### Ответ агента (вставь сюда)
 
 Каноничный источник для шага 2:
-[docs/agent-answers/incoming/security-blueprint-unified-inbox.md](docs/agent-answers/incoming/security-blueprint-unified-inbox.md)
+[docs/agent-answers/incoming/security-blueprint-unified-inbox.md](../../docs/agent-answers/incoming/security-blueprint-unified-inbox.md)
 
 🔐 Security Blueprint: Unified Inbox
 
@@ -733,7 +733,7 @@ Slack, Discord, GitHub, GitLab, Jira, Linear, Rocket.Chat, Teams, Zoom, Google C
 #### Ответ агента (вставь сюда)
 
 Каноничный источник для шага 3:
-[docs/agent-answers/incoming/unified-inbox-integration-matrix.md](docs/agent-answers/incoming/unified-inbox-integration-matrix.md)
+[docs/agent-answers/incoming/unified-inbox-integration-matrix.md](../../docs/agent-answers/incoming/unified-inbox-integration-matrix.md)
 
 Unified inbox — integration matrix
 Solution architecture · 13 services · Event retrieval, rate limits, security risk, wave prioritization

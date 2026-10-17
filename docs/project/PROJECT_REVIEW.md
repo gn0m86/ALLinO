@@ -103,8 +103,8 @@ CLAUDE.md § 5: _"Event bus start path: Redis Streams"_.
 
 ### 3.4 `domain/models.py` — пустой файл
 
-Доменные модели живут в [domain/events.py](backend/app/domain/events.py).
-[domain/models.py](backend/app/domain/models.py) — 1 строка.
+Доменные модели живут в [domain/events.py](../../backend/app/domain/events.py).
+[domain/models.py](../../backend/app/domain/models.py) — 1 строка.
 Следующий агент/разработчик может начать писать модели туда и создать раскол в доменном слое.
 
 ---
