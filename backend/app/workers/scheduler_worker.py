@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import logging
+import signal
+import sys
 import time
 from datetime import datetime, timezone
 from typing import Any
@@ -293,6 +295,9 @@ def main() -> None:
         logger.info("Scheduler tick complete: %d connector(s) synced", len(results))
         return
 
+    # Docker runs this as PID 1, where SIGTERM is ignored unless a handler is
+    # installed -- without one, `docker stop` waits 10s and then SIGKILLs it.
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
     run_scheduler_loop()
 
 

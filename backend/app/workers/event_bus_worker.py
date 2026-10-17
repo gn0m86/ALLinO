@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import signal
+import sys
 import time
 from collections import defaultdict
 from typing import Any
@@ -187,6 +189,9 @@ def main() -> None:
             return
         raise RuntimeError(message)
 
+    # Docker runs this as PID 1, where SIGTERM is ignored unless a handler is
+    # installed -- without one, `docker stop` waits 10s and then SIGKILLs it.
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
     run_worker_loop()
 
 

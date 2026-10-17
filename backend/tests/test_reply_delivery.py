@@ -59,6 +59,21 @@ def test_send_telegram_reply_raises_on_api_error(monkeypatch) -> None:
         send_telegram_reply(token="tok123", external_id="42:100", text="hello")
 
 
+def test_send_telegram_reply_http_error_does_not_leak_token(monkeypatch) -> None:
+    # A real httpx.Response, so raise_for_status() builds its default message --
+    # which embeds the request URL, where the Bot API puts the token.
+    def fake_post(self, url, json=None, headers=None):
+        return httpx.Response(401, request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(httpx.Client, "post", fake_post)
+
+    with pytest.raises(httpx.HTTPStatusError) as exc_info:
+        send_telegram_reply(token="123456:SECRET-bot-token", external_id="42:100", text="hello")
+
+    assert "SECRET-bot-token" not in str(exc_info.value)
+    assert exc_info.value.response.status_code == 401
+
+
 def test_send_slack_reply_builds_expected_request(monkeypatch) -> None:
     captured = {}
 

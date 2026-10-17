@@ -68,20 +68,23 @@ def process_connector_batch(
         normalized = normalize_event(event)
         key = dedup_key(event.tenantId, event.sourceType, event.externalId)
         added = add_if_new(key, normalized)
-        if added:
-            inserted += 1
-            status = "inserted"
-        else:
+        if not added:
+            # No per-event audit row for a duplicate: nothing was stored, and
+            # the caller's `.batch` audit entry already carries the duplicate
+            # count. Polling sources re-fetch their recent window every sync,
+            # so logging each re-seen message grew the append-only audit log
+            # by hundreds of rows per sync (441k rows / 237 MB in prod by 2026-07).
             duplicates += 1
-            status = "duplicate"
+            continue
 
+        inserted += 1
         log_ingestion_event(
             tenant_id=event.tenantId,
             action=f"{action_prefix}.event",
             event_id=event.eventId,
             source=event.sourceType,
             external_id=event.externalId,
-            status=status,
+            status="inserted",
         )
 
     return {

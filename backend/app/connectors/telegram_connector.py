@@ -76,6 +76,20 @@ def map_telegram_update_to_unified_event(
     }
 
 
+def _raise_for_status_redacted(resp: httpx.Response, token: str) -> None:
+    """httpx's HTTPStatusError message embeds the full request URL, and the Bot
+    API puts the bot token in the URL path -- callers persist str(exc) into
+    connector status, run history and the append-only audit log, so the
+    default message would leak the token there. Re-raise with it masked; still
+    an HTTPStatusError so retry classification (4xx = not retryable) is unchanged."""
+    try:
+        resp.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        raise httpx.HTTPStatusError(
+            str(exc).replace(token, "***"), request=exc.request, response=exc.response
+        ) from None
+
+
 def send_telegram_reply(*, token: str, external_id: str, text: str) -> dict[str, Any]:
     chat_id, _, message_id = external_id.partition(":")
     if not chat_id:
@@ -91,7 +105,7 @@ def send_telegram_reply(*, token: str, external_id: str, text: str) -> dict[str,
             json=body,
             headers={"Accept": "application/json", "User-Agent": "allino-backend"},
         )
-        resp.raise_for_status()
+        _raise_for_status_redacted(resp, token)
         payload = resp.json()
 
     if not payload.get("ok"):
@@ -165,7 +179,7 @@ class TelegramConnector(BaseConnector):
                     "User-Agent": "allino-backend",
                 },
             )
-            resp.raise_for_status()
+            _raise_for_status_redacted(resp, self.token)
             payload = resp.json()
             if not isinstance(payload, dict):
                 return []

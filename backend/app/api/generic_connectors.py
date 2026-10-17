@@ -206,15 +206,35 @@ def _resolve_webhook_verify_token(slug: str) -> str | None:
     return get_secret_value(f"ALLINO_GENERIC_{slug_to_env_key(slug)}_WEBHOOK_VERIFY_TOKEN")
 
 
-def _verify_signature(secret: str, body: bytes, signature_header: str | None) -> bool:
+def _verify_signature(secret: str, body: bytes, signature_header: str | None, *, prefix: str = "sha256=") -> bool:
     if not signature_header:
         return False
-    prefix = "sha256="
     if not signature_header.startswith(prefix):
         return False
     provided = signature_header[len(prefix):].strip()
     expected = hmac.new(secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
     return hmac.compare_digest(provided, expected)
+
+
+def _verify_any_signature(
+    secret: str,
+    body: bytes,
+    *,
+    webhook_signature: str | None,
+    hub_signature_256: str | None,
+    viber_signature: str | None,
+) -> bool:
+    """Same HMAC-SHA256-over-raw-body check, read from whichever header the
+    sender uses: our own X-Webhook-Signature, Meta Graph API's (WhatsApp
+    Business Cloud API) X-Hub-Signature-256 -- both `sha256=<hex>` -- or
+    Viber's X-Viber-Content-Signature, which is bare hex. The secret is the
+    same per-connector ALLINO_GENERIC_{SLUG}_WEBHOOK_SECRET either way (Meta:
+    the App Secret; Viber: the bot auth token)."""
+    return (
+        _verify_signature(secret, body, webhook_signature)
+        or _verify_signature(secret, body, hub_signature_256)
+        or _verify_signature(secret, body, viber_signature, prefix="")
+    )
 
 
 @webhook_router.get("/webhooks/{connector_id}")
@@ -252,6 +272,8 @@ async def receive_webhook_event(
     connector_id: str,
     request: Request,
     x_webhook_signature: str | None = Header(default=None, alias="X-Webhook-Signature"),
+    x_hub_signature_256: str | None = Header(default=None, alias="X-Hub-Signature-256"),
+    x_viber_content_signature: str | None = Header(default=None, alias="X-Viber-Content-Signature"),
 ) -> dict[str, Any]:
     config = get_generic_connector(config_id=connector_id)
     if config is None or not config["webhook_enabled"]:
@@ -262,7 +284,13 @@ async def receive_webhook_event(
         raise HTTPException(status_code=503, detail="Webhook receiver is not configured with a secret")
 
     body = await request.body()
-    if not _verify_signature(secret, body, x_webhook_signature):
+    if not _verify_any_signature(
+        secret,
+        body,
+        webhook_signature=x_webhook_signature,
+        hub_signature_256=x_hub_signature_256,
+        viber_signature=x_viber_content_signature,
+    ):
         raise HTTPException(status_code=401, detail="Invalid or missing webhook signature")
 
     try:

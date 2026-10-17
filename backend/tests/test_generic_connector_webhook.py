@@ -206,7 +206,7 @@ def test_webhook_accepts_whatsapp_shaped_nested_array_payload(tmp_path, monkeypa
         resp = client.post(
             f"/webhooks/{config['id']}",
             content=body,
-            headers={"Content-Type": "application/json", "X-Webhook-Signature": _sign(secret, body)},
+            headers={"Content-Type": "application/json", "X-Hub-Signature-256": _sign(secret, body)},
         )
         assert resp.status_code == 200
         assert resp.json()["inserted"] == 2
@@ -253,7 +253,7 @@ def test_webhook_accepts_viber_shaped_single_event_payload(tmp_path, monkeypatch
         resp = client.post(
             f"/webhooks/{config['id']}",
             content=body,
-            headers={"Content-Type": "application/json", "X-Webhook-Signature": _sign(secret, body)},
+            headers={"Content-Type": "application/json", "X-Viber-Content-Signature": _sign(secret, body).removeprefix("sha256=")},
         )
         assert resp.status_code == 200
         assert resp.json()["inserted"] == 1
@@ -261,6 +261,13 @@ def test_webhook_accepts_viber_shaped_single_event_payload(tmp_path, monkeypatch
         inbox = client.get("/api/v1/ingestion/inbox?tenant_id=tenant_demo")
         previews = {item["preview"] for item in inbox.json()}
         assert "Hello from Viber" in previews
+
+        bad = client.post(
+            f"/webhooks/{config['id']}",
+            content=body,
+            headers={"Content-Type": "application/json", "X-Viber-Content-Signature": "deadbeef"},
+        )
+        assert bad.status_code == 401
 
 
 def test_webhook_subscription_verification_handshake(tmp_path, monkeypatch) -> None:

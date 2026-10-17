@@ -1,3 +1,4 @@
+import hmac
 import logging
 
 from fastapi import Header, HTTPException
@@ -119,6 +120,15 @@ def _claim_values(payload: dict, key: str) -> set[str]:
     return set()
 
 
+def _api_key_matches(x_api_key: str | None) -> bool:
+    """Constant-time comparison: a plain `==` returns as soon as the first
+    character differs, which leaks how much of a guessed key is right via
+    response timing."""
+    if not ALLINO_API_KEY or not x_api_key:
+        return False
+    return hmac.compare_digest(x_api_key.encode("utf-8"), ALLINO_API_KEY.encode("utf-8"))
+
+
 def require_api_key(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
     authorization: str | None = Header(default=None, alias="Authorization"),
@@ -138,7 +148,7 @@ def require_api_key(
             ),
         )
 
-    if has_api_key and x_api_key == ALLINO_API_KEY:
+    if has_api_key and _api_key_matches(x_api_key):
         return
 
     if has_jwt and _is_valid_bearer(authorization):
@@ -154,7 +164,7 @@ def require_connector_sync_permission(
     """Require connector-sync permissions for JWT callers; API key callers are trusted operational users."""
     require_api_key(x_api_key=x_api_key, authorization=authorization)
 
-    if ALLINO_API_KEY and x_api_key == ALLINO_API_KEY:
+    if _api_key_matches(x_api_key):
         return
 
     # In API-key-only or local insecure-dev mode, auth was already enforced by require_api_key.
@@ -183,7 +193,7 @@ def require_ingestion_read_permission(
     """Require read permissions for JWT callers on ingestion read endpoints; API key callers are trusted."""
     require_api_key(x_api_key=x_api_key, authorization=authorization)
 
-    if ALLINO_API_KEY and x_api_key == ALLINO_API_KEY:
+    if _api_key_matches(x_api_key):
         return
 
     # In API-key-only or local insecure-dev mode, auth was already enforced by require_api_key.
@@ -212,7 +222,7 @@ def require_reply_permission(
     """Require reply/write-back permissions for JWT callers; API key callers are trusted."""
     require_api_key(x_api_key=x_api_key, authorization=authorization)
 
-    if ALLINO_API_KEY and x_api_key == ALLINO_API_KEY:
+    if _api_key_matches(x_api_key):
         return
 
     # In API-key-only or local insecure-dev mode, auth was already enforced by require_api_key.
@@ -241,7 +251,7 @@ def require_message_actions_permission(
     """Require archive/snooze permissions for JWT callers; API key callers are trusted."""
     require_api_key(x_api_key=x_api_key, authorization=authorization)
 
-    if ALLINO_API_KEY and x_api_key == ALLINO_API_KEY:
+    if _api_key_matches(x_api_key):
         return
 
     # In API-key-only or local insecure-dev mode, auth was already enforced by require_api_key.
@@ -274,7 +284,7 @@ def require_admin_mfa_permission(
     regardless of which first factor authenticated the caller."""
     require_api_key(x_api_key=x_api_key, authorization=authorization)
 
-    is_trusted_api_key = bool(ALLINO_API_KEY) and x_api_key == ALLINO_API_KEY
+    is_trusted_api_key = _api_key_matches(x_api_key)
     if not is_trusted_api_key and _jwt_verification_key():
         payload = get_authenticated_jwt_payload(authorization)
         if payload is None:
