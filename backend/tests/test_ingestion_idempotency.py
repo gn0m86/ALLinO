@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from fastapi.testclient import TestClient
 
 from app.db import session
+from app.db.repositories.audit_repo import list_audit
 from app.db.repositories.messages_repo import add_if_new, count_messages
 from app.db.session import init_db
 from app.domain.events import InboxMessage
@@ -147,3 +148,32 @@ def test_connector_sync_deduplicates_duplicate_events(tmp_path) -> None:
         assert r2.status_code == 200
         assert r2.json()["inserted"] == 0
         assert r2.json()["duplicates"] == 1
+
+
+def test_connector_resync_writes_no_per_event_audit_rows_for_duplicates(tmp_path) -> None:
+    # Polling sources re-fetch their recent window on every sync; re-seen
+    # messages must not add a `.event` audit row each time (unbounded growth of
+    # the append-only audit log). The `.batch` row still records the count.
+    session.DB_PATH = tmp_path / "connector_dedup_audit.db"
+
+    notification = {
+        "id": "gh-dedup-audit-1",
+        "updated_at": "2026-06-30T10:00:00Z",
+        "reason": "mention",
+        "subject": {"title": "Dedup audit issue", "type": "Issue"},
+        "repository": {"full_name": "org/repo"},
+    }
+
+    def actions() -> list[str]:
+        return [row["action"] for row in list_audit("tenant_demo", limit=100)]
+
+    with TestClient(app) as client:
+        for _ in range(3):
+            r = client.post(
+                "/api/v1/ingestion/connectors/github/sync?tenant_id=tenant_demo",
+                json={"seeded_notifications": [notification]},
+            )
+            assert r.status_code == 200
+
+    assert actions().count("connector.github.sync.event") == 1
+    assert actions().count("connector.github.sync.batch") == 3

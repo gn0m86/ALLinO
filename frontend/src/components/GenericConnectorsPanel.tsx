@@ -47,6 +47,7 @@ type FormState = {
 	field_externalId: string
 	field_timestamp: string
 	field_preview: string
+	field_items_path: string
 	webhook_enabled: boolean
 }
 
@@ -59,6 +60,7 @@ const EMPTY_FORM: FormState = {
 	field_externalId: "",
 	field_timestamp: "",
 	field_preview: "",
+	field_items_path: "",
 	webhook_enabled: false,
 }
 
@@ -122,6 +124,7 @@ export function GenericConnectorsPanel() {
 			field_externalId: config.field_mapping.externalId,
 			field_timestamp: config.field_mapping.timestamp,
 			field_preview: config.field_mapping.preview ?? "",
+			field_items_path: config.field_mapping.items_path ?? "",
 			webhook_enabled: config.webhook_enabled,
 		})
 		setFormError(null)
@@ -165,6 +168,7 @@ export function GenericConnectorsPanel() {
 						externalId,
 						timestamp,
 						preview: form.field_preview.trim() || null,
+						items_path: form.field_items_path.trim() || null,
 					},
 					webhook_enabled: form.webhook_enabled,
 				})
@@ -181,6 +185,7 @@ export function GenericConnectorsPanel() {
 						externalId,
 						timestamp,
 						preview: form.field_preview.trim() || null,
+						items_path: form.field_items_path.trim() || null,
 					},
 					webhook_enabled: form.webhook_enabled,
 				})
@@ -348,6 +353,18 @@ export function GenericConnectorsPanel() {
 								placeholder="title"
 							/>
 						</div>
+					</div>
+					<div>
+						<label style={labelStyle} htmlFor="gc-items">
+							Items path (optional — for nested/array payloads, e.g. WhatsApp)
+						</label>
+						<input
+							id="gc-items"
+							style={inputStyle}
+							value={form.field_items_path}
+							onChange={(e) => setForm({ ...form, field_items_path: e.target.value })}
+							placeholder="entry[].changes[].value.messages[]"
+						/>
 					</div>
 					<label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-2)" }}>
 						<input

@@ -3,19 +3,22 @@
 import { useEffect, useRef, useState } from "react"
 
 import { fetchAudit } from "../lib/api"
+import { parseServerTimestamp, TimePrefs, useTimePrefs } from "../lib/timePrefs"
 import { AuditLogEntry } from "../lib/types"
 
 const AUDIT_LIMIT = 200
 
-function formatTime(value: string): string {
-	const d = new Date(value)
+function formatTime(value: string, prefs: TimePrefs): string {
+	const d = parseServerTimestamp(value)
 	if (Number.isNaN(d.getTime())) return value
 	return d.toLocaleString("en", {
+		timeZone: prefs.myTimezone,
 		month: "short",
 		day: "2-digit",
 		hour: "2-digit",
 		minute: "2-digit",
 		second: "2-digit",
+		hour12: prefs.hourCycle === "12h",
 	})
 }
 
@@ -31,6 +34,7 @@ export function SecurityCenter() {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 	const disposedRef = useRef(false)
+	const timePrefs = useTimePrefs()
 
 	const load = () => {
 		const controller = new AbortController()
@@ -172,7 +176,7 @@ export function SecurityCenter() {
 								}}
 							>
 								<span style={{ fontFamily: "var(--font-mono)", color: "var(--text-3)" }}>
-									{formatTime(entry.created_at)}
+									{formatTime(entry.created_at, timePrefs)}
 								</span>
 								<div>
 									<div style={{ color: actionColor(entry.action), fontFamily: "var(--font-mono)" }}>

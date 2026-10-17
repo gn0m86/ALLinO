@@ -88,6 +88,14 @@ export function useTimePrefs(): TimePrefs {
   return prefs
 }
 
+// SQLite's CURRENT_TIMESTAMP columns (audit_logs.created_at etc.) come back as
+// "YYYY-MM-DD HH:MM:SS" -- UTC, but with no zone marker, which `new Date()`
+// would read as the browser's LOCAL time. Treat that shape as UTC.
+export function parseServerTimestamp(value: string): Date {
+  const naive = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d+)?$/.test(value)
+  return new Date(naive ? `${value.replace(" ", "T")}Z` : value)
+}
+
 function clockAt(iso: string, timeZone: string, hourCycle: HourCycle): string {
   const d = new Date(iso)
   if (isNaN(d.getTime())) return "--:--"

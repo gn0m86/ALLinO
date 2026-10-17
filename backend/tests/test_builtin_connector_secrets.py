@@ -250,7 +250,7 @@ def test_sync_builtin_connector_secret_routes_google_calendar(tmp_path, monkeypa
 
     seen: dict = {}
 
-    def fake_sync(*, tenant_id, calendar_id=None, token=None, retry_policy=None, seeded_events=None):
+    def fake_sync(*, tenant_id, calendar_id=None, token=None, client_id=None, client_secret=None, refresh_token=None, retry_policy=None, seeded_events=None):
         seen["tenant_id"] = tenant_id
         seen["calendar_id"] = calendar_id
         seen["token"] = token
@@ -315,3 +315,75 @@ def test_api_sync_endpoint_502_on_sync_error(tmp_path, monkeypatch) -> None:
 
         resp = client.post("/api/v1/ingestion/connectors/builtin/github/sync?tenant_id=tenant_demo")
         assert resp.status_code == 502
+
+
+def test_api_google_calendar_accepts_oauth_refresh_trio_without_token(tmp_path) -> None:
+    session.DB_PATH = tmp_path / "builtin_secrets_api_gcal_oauth.db"
+
+    with TestClient(app) as client:
+        resp = client.post(
+            "/api/v1/ingestion/connectors/builtin/google_calendar/secret?tenant_id=tenant_demo",
+            json={
+                "client_id": "client-123",
+                "client_secret": "secret-abc",
+                "refresh_token": "refresh-xyz",
+                "calendar_id": "team@example.invalid",
+            },
+        )
+        assert resp.status_code == 200
+        assert resp.json()["configured"] is True
+
+
+def test_api_google_calendar_rejects_without_token_or_full_oauth_trio(tmp_path) -> None:
+    session.DB_PATH = tmp_path / "builtin_secrets_api_gcal_incomplete.db"
+
+    with TestClient(app) as client:
+        # No token, and only a partial OAuth trio (missing refresh_token).
+        resp = client.post(
+            "/api/v1/ingestion/connectors/builtin/google_calendar/secret?tenant_id=tenant_demo",
+            json={"client_id": "client-123", "client_secret": "secret-abc"},
+        )
+        assert resp.status_code == 422
+
+
+def test_api_google_calendar_still_accepts_plain_token(tmp_path) -> None:
+    session.DB_PATH = tmp_path / "builtin_secrets_api_gcal_plain_token.db"
+
+    with TestClient(app) as client:
+        resp = client.post(
+            "/api/v1/ingestion/connectors/builtin/google_calendar/secret?tenant_id=tenant_demo",
+            json={"token": "raw-access-token"},
+        )
+        assert resp.status_code == 200
+
+
+def test_api_google_calendar_sync_uses_oauth_refresh_flow(tmp_path, monkeypatch) -> None:
+    session.DB_PATH = tmp_path / "builtin_secrets_api_gcal_oauth_sync.db"
+
+    from app.connectors.google_calendar_connector import GoogleCalendarConnector
+
+    monkeypatch.setattr(
+        "app.connectors.google_calendar_connector.refresh_google_access_token",
+        lambda *, client_id, client_secret, refresh_token: "minted-token",
+    )
+
+    seen_tokens = []
+
+    def fake_fetch(self) -> list[dict]:
+        seen_tokens.append(self.token)
+        return []
+
+    monkeypatch.setattr(GoogleCalendarConnector, "_fetch_events_from_api", fake_fetch)
+
+    with TestClient(app) as client:
+        client.post(
+            "/api/v1/ingestion/connectors/builtin/google_calendar/secret?tenant_id=tenant_demo",
+            json={"client_id": "client-123", "client_secret": "secret-abc", "refresh_token": "refresh-xyz"},
+        )
+
+        resp = client.post(
+            "/api/v1/ingestion/connectors/builtin/google_calendar/sync?tenant_id=tenant_demo"
+        )
+
+        assert resp.status_code == 200
+        assert seen_tokens == ["minted-token"]

@@ -10,17 +10,22 @@ import {
 } from "../lib/api"
 import { BuiltinConnectorSecretSummary, BuiltinConnectorSourceType } from "../lib/types"
 
+type ExtraField = "base_url" | "user_id" | "channel_id" | "calendar_id" | "client_id" | "client_secret" | "refresh_token"
+
 // Extra (beyond token) fields each source type accepts, mirroring
 // backend/app/api/builtin_connector_secrets.py's _EXTRA_FIELDS. Sources not
 // listed here only take a token.
-const EXTRA_FIELDS: Partial<Record<BuiltinConnectorSourceType, ("base_url" | "user_id" | "channel_id" | "calendar_id")[]>> = {
+const EXTRA_FIELDS: Partial<Record<BuiltinConnectorSourceType, ExtraField[]>> = {
 	gitlab: ["base_url"],
 	jira: ["base_url"],
 	slack: ["channel_id"],
 	discord: ["channel_id"],
 	rocketchat: ["user_id", "base_url", "channel_id"],
-	google_calendar: ["calendar_id"],
+	google_calendar: ["calendar_id", "client_id", "client_secret", "refresh_token"],
 }
+
+// Fields that should render as a password input (sensitive, not just an ID).
+const SENSITIVE_FIELDS = new Set<ExtraField>(["client_secret", "refresh_token"])
 
 const SOURCE_LABELS: Record<BuiltinConnectorSourceType, string> = {
 	github: "GitHub",
@@ -43,6 +48,9 @@ const FIELD_LABELS: Record<string, string> = {
 	user_id: "User ID",
 	channel_id: "Channel ID",
 	calendar_id: "Calendar ID",
+	client_id: "OAuth Client ID",
+	client_secret: "OAuth Client Secret",
+	refresh_token: "OAuth Refresh Token",
 }
 
 const inputStyle: React.CSSProperties = {
@@ -72,6 +80,9 @@ type FormState = {
 	user_id: string
 	channel_id: string
 	calendar_id: string
+	client_id: string
+	client_secret: string
+	refresh_token: string
 	poll_interval_seconds: string
 }
 
@@ -81,6 +92,9 @@ const EMPTY_FORM: FormState = {
 	user_id: "",
 	channel_id: "",
 	calendar_id: "",
+	client_id: "",
+	client_secret: "",
+	refresh_token: "",
 	poll_interval_seconds: "",
 }
 
@@ -135,11 +149,17 @@ export function BuiltinConnectorSecretsPanel() {
 
 	async function handleSubmit(source: BuiltinConnectorSourceType) {
 		if (submitting) return
-		if (!form.token.trim()) {
+		const extras = EXTRA_FIELDS[source] ?? []
+		const hasOAuthTrio = Boolean(form.client_id.trim() && form.client_secret.trim() && form.refresh_token.trim())
+		if (source === "google_calendar") {
+			if (!form.token.trim() && !hasOAuthTrio) {
+				setFormError("Provide either a token, or Client ID + Client Secret + Refresh Token.")
+				return
+			}
+		} else if (!form.token.trim()) {
 			setFormError("Token is required.")
 			return
 		}
-		const extras = EXTRA_FIELDS[source] ?? []
 		for (const field of extras) {
 			if ((source === "rocketchat" && (field === "user_id" || field === "base_url")) && !form[field].trim()) {
 				setFormError(`${FIELD_LABELS[field]} is required for Rocket.Chat.`)
@@ -150,11 +170,14 @@ export function BuiltinConnectorSecretsPanel() {
 		setFormError(null)
 		try {
 			const summary = await upsertBuiltinConnectorSecret(source, {
-				token: form.token.trim(),
+				token: form.token.trim() || undefined,
 				base_url: extras.includes("base_url") ? form.base_url.trim() || null : undefined,
 				user_id: extras.includes("user_id") ? form.user_id.trim() || null : undefined,
 				channel_id: extras.includes("channel_id") ? form.channel_id.trim() || null : undefined,
 				calendar_id: extras.includes("calendar_id") ? form.calendar_id.trim() || null : undefined,
+				client_id: extras.includes("client_id") ? form.client_id.trim() || null : undefined,
+				client_secret: extras.includes("client_secret") ? form.client_secret.trim() || null : undefined,
+				refresh_token: extras.includes("refresh_token") ? form.refresh_token.trim() || null : undefined,
 				poll_interval_seconds: form.poll_interval_seconds.trim() ? Number(form.poll_interval_seconds) : null,
 			})
 			setConfigured((prev) => ({ ...prev, [source]: summary }))
@@ -381,7 +404,9 @@ export function BuiltinConnectorSecretsPanel() {
 										}}
 									>
 										<div>
-											<label style={labelStyle} htmlFor={`bc-token-${source}`}>Token</label>
+											<label style={labelStyle} htmlFor={`bc-token-${source}`}>
+												Token{source === "google_calendar" ? " (optional if using OAuth fields below)" : ""}
+											</label>
 											<input
 												id={`bc-token-${source}`}
 												style={inputStyle}
@@ -391,12 +416,20 @@ export function BuiltinConnectorSecretsPanel() {
 												placeholder={summary ? "Enter a new token to replace the stored one" : "Token"}
 											/>
 										</div>
+										{source === "google_calendar" && (
+											<div style={{ fontSize: 11, color: "var(--text-3)" }}>
+												For auto-renewing access (recommended): leave Token empty and fill in
+												Client ID, Client Secret and Refresh Token instead — obtained once from
+												your Google Cloud OAuth client + a one-time consent exchange.
+											</div>
+										)}
 										{extras.map((field) => (
 											<div key={field}>
 												<label style={labelStyle} htmlFor={`bc-${field}-${source}`}>{FIELD_LABELS[field]}</label>
 												<input
 													id={`bc-${field}-${source}`}
 													style={inputStyle}
+													type={SENSITIVE_FIELDS.has(field) ? "password" : "text"}
 													value={form[field]}
 													onChange={(e) => setForm({ ...form, [field]: e.target.value })}
 												/>

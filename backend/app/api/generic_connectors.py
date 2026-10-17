@@ -5,7 +5,8 @@ import re
 from typing import Any, Literal
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from ..connectors.base import RetryPolicy
@@ -37,6 +38,11 @@ class GenericConnectorFieldMapping(BaseModel):
     externalId: str
     timestamp: str
     preview: str | None = None
+    # Locates the list of raw items nested inside a poll response or webhook body,
+    # for sources whose items live deeper than a top-level array or an
+    # "items"/"data"/"results" key (e.g. WhatsApp Business Cloud API's
+    # "entry[].changes[].value.messages[]"). See extract_items_from_payload().
+    items_path: str | None = None
 
 
 class GenericConnectorCreateRequest(BaseModel):
@@ -196,10 +202,13 @@ def _resolve_webhook_secret(slug: str) -> str | None:
     return get_secret_value(f"ALLINO_GENERIC_{slug_to_env_key(slug)}_WEBHOOK_SECRET")
 
 
-def _verify_signature(secret: str, body: bytes, signature_header: str | None) -> bool:
+def _resolve_webhook_verify_token(slug: str) -> str | None:
+    return get_secret_value(f"ALLINO_GENERIC_{slug_to_env_key(slug)}_WEBHOOK_VERIFY_TOKEN")
+
+
+def _verify_signature(secret: str, body: bytes, signature_header: str | None, *, prefix: str = "sha256=") -> bool:
     if not signature_header:
         return False
-    prefix = "sha256="
     if not signature_header.startswith(prefix):
         return False
     provided = signature_header[len(prefix):].strip()
@@ -207,11 +216,64 @@ def _verify_signature(secret: str, body: bytes, signature_header: str | None) ->
     return hmac.compare_digest(provided, expected)
 
 
+def _verify_any_signature(
+    secret: str,
+    body: bytes,
+    *,
+    webhook_signature: str | None,
+    hub_signature_256: str | None,
+    viber_signature: str | None,
+) -> bool:
+    """Same HMAC-SHA256-over-raw-body check, read from whichever header the
+    sender uses: our own X-Webhook-Signature, Meta Graph API's (WhatsApp
+    Business Cloud API) X-Hub-Signature-256 -- both `sha256=<hex>` -- or
+    Viber's X-Viber-Content-Signature, which is bare hex. The secret is the
+    same per-connector ALLINO_GENERIC_{SLUG}_WEBHOOK_SECRET either way (Meta:
+    the App Secret; Viber: the bot auth token)."""
+    return (
+        _verify_signature(secret, body, webhook_signature)
+        or _verify_signature(secret, body, hub_signature_256)
+        or _verify_signature(secret, body, viber_signature, prefix="")
+    )
+
+
+@webhook_router.get("/webhooks/{connector_id}")
+def verify_webhook_subscription(
+    connector_id: str,
+    hub_mode: str | None = Query(default=None, alias="hub.mode"),
+    hub_challenge: str | None = Query(default=None, alias="hub.challenge"),
+    hub_verify_token: str | None = Query(default=None, alias="hub.verify_token"),
+) -> PlainTextResponse:
+    """Meta Graph API webhook-subscription handshake (used by WhatsApp Business
+    Cloud API among others): on subscribing a webhook URL, Meta issues this GET
+    with a verify token and expects `hub.challenge` echoed back verbatim once the
+    token matches. Opt-in per connector via ALLINO_GENERIC_{SLUG}_WEBHOOK_VERIFY_TOKEN
+    — connectors that don't configure one 404, same as before this endpoint existed."""
+    config = get_generic_connector(config_id=connector_id)
+    if config is None or not config["webhook_enabled"]:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+
+    expected_token = _resolve_webhook_verify_token(config["slug"])
+    if not expected_token:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+
+    if (
+        hub_mode != "subscribe"
+        or hub_challenge is None
+        or not hmac.compare_digest(hub_verify_token or "", expected_token)
+    ):
+        raise HTTPException(status_code=403, detail="Webhook verification failed")
+
+    return PlainTextResponse(hub_challenge)
+
+
 @webhook_router.post("/webhooks/{connector_id}")
 async def receive_webhook_event(
     connector_id: str,
     request: Request,
     x_webhook_signature: str | None = Header(default=None, alias="X-Webhook-Signature"),
+    x_hub_signature_256: str | None = Header(default=None, alias="X-Hub-Signature-256"),
+    x_viber_content_signature: str | None = Header(default=None, alias="X-Viber-Content-Signature"),
 ) -> dict[str, Any]:
     config = get_generic_connector(config_id=connector_id)
     if config is None or not config["webhook_enabled"]:
@@ -222,7 +284,13 @@ async def receive_webhook_event(
         raise HTTPException(status_code=503, detail="Webhook receiver is not configured with a secret")
 
     body = await request.body()
-    if not _verify_signature(secret, body, x_webhook_signature):
+    if not _verify_any_signature(
+        secret,
+        body,
+        webhook_signature=x_webhook_signature,
+        hub_signature_256=x_hub_signature_256,
+        viber_signature=x_viber_content_signature,
+    ):
         raise HTTPException(status_code=401, detail="Invalid or missing webhook signature")
 
     try:
@@ -230,10 +298,10 @@ async def receive_webhook_event(
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise HTTPException(status_code=400, detail="Invalid JSON payload") from exc
 
-    raw_items = extract_items_from_payload(payload)
     tenant_id = config["tenant_id"]
     slug = config["slug"]
     field_mapping = config["field_mapping"]
+    raw_items = extract_items_from_payload(payload, field_mapping.get("items_path"))
 
     events: list[dict[str, Any]] = []
     for item in raw_items:

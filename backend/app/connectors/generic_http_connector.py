@@ -15,17 +15,54 @@ def slug_to_env_key(slug: str) -> str:
 
 
 def extract_path(item: dict[str, Any], path: str) -> Any:
-    """Extract a value from a nested dict via a dot-separated path (no array indices, MVP)."""
+    """Extract a value from a nested dict/list via a dot-separated path.
+
+    A segment that is a plain non-negative integer indexes into a list at that
+    point (e.g. "contacts.0.profile.name" for a WhatsApp-shaped payload item).
+    """
     value: Any = item
     for part in path.split("."):
-        if not isinstance(value, dict) or part not in value:
+        if isinstance(value, list):
+            if not part.isdigit() or int(part) >= len(value):
+                return None
+            value = value[int(part)]
+        elif isinstance(value, dict):
+            if part not in value:
+                return None
+            value = value[part]
+        else:
             return None
-        value = value[part]
     return value
 
 
-def extract_items_from_payload(payload: Any) -> list[dict[str, Any]]:
-    """Normalize a poll response or webhook body into a flat list of raw item dicts."""
+def extract_items_from_payload(payload: Any, items_path: str | None = None) -> list[dict[str, Any]]:
+    """Normalize a poll response or webhook body into a flat list of raw item dicts.
+
+    `items_path`, when given, locates a list of items nested deeper than a top-level
+    array or an "items"/"data"/"results" key — needed for sources like the WhatsApp
+    Business Cloud API, whose messages live at `entry[].changes[].value.messages[]`.
+    Each `[]`-suffixed dot-separated segment iterates a list and flattens one level;
+    a plain segment is a dict key. Without `items_path`, falls back to the original
+    flat-payload heuristics (fully backward compatible with existing connectors).
+    """
+    if items_path:
+        values: list[Any] = [payload]
+        for part in items_path.split("."):
+            is_array = part.endswith("[]")
+            key = part[:-2] if is_array else part
+            next_values: list[Any] = []
+            for value in values:
+                if not isinstance(value, dict) or key not in value:
+                    continue
+                nested = value[key]
+                if is_array:
+                    if isinstance(nested, list):
+                        next_values.extend(nested)
+                else:
+                    next_values.append(nested)
+            values = next_values
+        return [item for item in values if isinstance(item, dict)]
+
     if isinstance(payload, list):
         return [item for item in payload if isinstance(item, dict)]
     if isinstance(payload, dict):
@@ -39,7 +76,12 @@ def extract_items_from_payload(payload: Any) -> list[dict[str, Any]]:
 
 def _parse_timestamp(raw: Any) -> datetime:
     if isinstance(raw, (int, float)):
-        return datetime.fromtimestamp(raw, tz=timezone.utc)
+        # Some sources (e.g. Viber) send epoch milliseconds, not seconds.
+        seconds = raw / 1000 if raw > 1e12 else raw
+        try:
+            return datetime.fromtimestamp(seconds, tz=timezone.utc)
+        except (OverflowError, OSError, ValueError):
+            return datetime.now(timezone.utc)
     if isinstance(raw, str):
         try:
             parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
@@ -166,4 +208,4 @@ class GenericHttpConnector(BaseConnector):
             resp = client.get(self.base_url, headers=self._build_headers())
             resp.raise_for_status()
             payload = resp.json()
-        return extract_items_from_payload(payload)
+        return extract_items_from_payload(payload, self.field_mapping.get("items_path"))

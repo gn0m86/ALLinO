@@ -1,3 +1,6 @@
+import httpx
+import pytest
+
 from app.connectors.telegram_connector import TelegramConnector, map_telegram_update_to_unified_event
 
 
@@ -81,3 +84,20 @@ def test_telegram_connector_fetch_seeded_events() -> None:
 
     connector.stop()
     assert connector.health().status == "stopped"
+
+
+def test_telegram_connector_http_error_does_not_leak_token(monkeypatch) -> None:
+    def fake_get(self, url, params=None, headers=None):
+        return httpx.Response(401, request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(httpx.Client, "get", fake_get)
+
+    connector = TelegramConnector(tenant_id="tenant_demo", token="123456:SECRET-bot-token")
+    connector.start()
+
+    with pytest.raises(httpx.HTTPStatusError) as exc_info:
+        list(connector.fetch_events())
+
+    assert "SECRET-bot-token" not in str(exc_info.value)
+    # 4xx stays non-retryable: one attempt only, same as before redaction.
+    assert connector.last_retry_count == 0

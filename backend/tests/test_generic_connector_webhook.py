@@ -149,6 +149,161 @@ def test_webhook_disabled_connector_returns_404(tmp_path) -> None:
         assert resp.status_code == 404
 
 
+def test_webhook_accepts_whatsapp_shaped_nested_array_payload(tmp_path, monkeypatch) -> None:
+    """WhatsApp Business Cloud API webhook shape: entry[].changes[].value.messages[].
+    Confirms the generic receiver can ingest it via items_path config alone, with no
+    dedicated WhatsApp connector code."""
+    session.DB_PATH = tmp_path / "webhook_whatsapp.db"
+    secret = "s3cr3t"
+    monkeypatch.setenv("ALLINO_GENERIC_WHATSAPP_WEBHOOK_SECRET", secret)
+
+    with TestClient(app) as client:
+        resp = client.post(
+            "/api/v1/ingestion/connectors/generic?tenant_id=tenant_demo",
+            json={
+                "name": "WhatsApp",
+                "field_mapping": {
+                    "externalId": "id",
+                    "timestamp": "timestamp",
+                    "preview": "text.body",
+                    "items_path": "entry[].changes[].value.messages[]",
+                },
+                "webhook_enabled": True,
+            },
+        )
+        assert resp.status_code == 200
+        config = resp.json()
+
+        body = json.dumps(
+            {
+                "object": "whatsapp_business_account",
+                "entry": [
+                    {
+                        "id": "entry-1",
+                        "changes": [
+                            {
+                                "value": {
+                                    "messages": [
+                                        {
+                                            "id": "wamid.1",
+                                            "timestamp": "1717000000",
+                                            "text": {"body": "hello"},
+                                        },
+                                        {
+                                            "id": "wamid.2",
+                                            "timestamp": "1717000100",
+                                            "text": {"body": "world"},
+                                        },
+                                    ]
+                                },
+                            }
+                        ],
+                    }
+                ],
+            }
+        ).encode()
+
+        resp = client.post(
+            f"/webhooks/{config['id']}",
+            content=body,
+            headers={"Content-Type": "application/json", "X-Hub-Signature-256": _sign(secret, body)},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["inserted"] == 2
+
+        inbox = client.get("/api/v1/ingestion/inbox?tenant_id=tenant_demo")
+        previews = {item["preview"] for item in inbox.json()}
+        assert {"hello", "world"} <= previews
+
+
+def test_webhook_accepts_viber_shaped_single_event_payload(tmp_path, monkeypatch) -> None:
+    """Viber sends one flat event object per webhook call (no items array) with a
+    millisecond-epoch timestamp -- confirms both work via existing dot-path mapping,
+    no items_path needed."""
+    session.DB_PATH = tmp_path / "webhook_viber.db"
+    secret = "s3cr3t"
+    monkeypatch.setenv("ALLINO_GENERIC_VIBER_WEBHOOK_SECRET", secret)
+
+    with TestClient(app) as client:
+        resp = client.post(
+            "/api/v1/ingestion/connectors/generic?tenant_id=tenant_demo",
+            json={
+                "name": "Viber",
+                "field_mapping": {
+                    "externalId": "message_token",
+                    "timestamp": "timestamp",
+                    "preview": "message.text",
+                },
+                "webhook_enabled": True,
+            },
+        )
+        assert resp.status_code == 200
+        config = resp.json()
+
+        body = json.dumps(
+            {
+                "event": "message",
+                "timestamp": 1457764197627,
+                "message_token": 4912661846655238145,
+                "sender": {"id": "sender-1", "name": "Alice"},
+                "message": {"type": "text", "text": "Hello from Viber"},
+            }
+        ).encode()
+
+        resp = client.post(
+            f"/webhooks/{config['id']}",
+            content=body,
+            headers={"Content-Type": "application/json", "X-Viber-Content-Signature": _sign(secret, body).removeprefix("sha256=")},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["inserted"] == 1
+
+        inbox = client.get("/api/v1/ingestion/inbox?tenant_id=tenant_demo")
+        previews = {item["preview"] for item in inbox.json()}
+        assert "Hello from Viber" in previews
+
+        bad = client.post(
+            f"/webhooks/{config['id']}",
+            content=body,
+            headers={"Content-Type": "application/json", "X-Viber-Content-Signature": "deadbeef"},
+        )
+        assert bad.status_code == 401
+
+
+def test_webhook_subscription_verification_handshake(tmp_path, monkeypatch) -> None:
+    session.DB_PATH = tmp_path / "webhook_verify.db"
+    monkeypatch.setenv("ALLINO_GENERIC_WEBHOOK_SOURCE_WEBHOOK_VERIFY_TOKEN", "verify-me")
+
+    with TestClient(app) as client:
+        config = _create_webhook_connector(client)
+
+        ok = client.get(
+            f"/webhooks/{config['id']}",
+            params={"hub.mode": "subscribe", "hub.verify_token": "verify-me", "hub.challenge": "challenge-123"},
+        )
+        assert ok.status_code == 200
+        assert ok.text == "challenge-123"
+
+        wrong_token = client.get(
+            f"/webhooks/{config['id']}",
+            params={"hub.mode": "subscribe", "hub.verify_token": "wrong", "hub.challenge": "challenge-123"},
+        )
+        assert wrong_token.status_code == 403
+
+
+def test_webhook_subscription_verification_404_when_no_token_configured(tmp_path) -> None:
+    session.DB_PATH = tmp_path / "webhook_verify_unconfigured.db"
+
+    with TestClient(app) as client:
+        config = _create_webhook_connector(client)
+
+        resp = client.get(
+            f"/webhooks/{config['id']}",
+            params={"hub.mode": "subscribe", "hub.verify_token": "anything", "hub.challenge": "x"},
+        )
+        assert resp.status_code == 404
+
+
 def test_webhook_dedupes_against_poll_sync_of_same_external_id(tmp_path, monkeypatch) -> None:
     session.DB_PATH = tmp_path / "webhook_dedup.db"
     secret = "s3cr3t"

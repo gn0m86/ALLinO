@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import logging
+import signal
+import sys
 import time
 from datetime import datetime, timezone
 from typing import Any
@@ -220,6 +222,9 @@ def run_scheduler_tick(*, now: datetime | None = None) -> list[dict[str, Any]]:
                     tenant_id=tenant_id,
                     calendar_id=config.get("calendar_id"),
                     token=config.get("token"),
+                    client_id=config.get("client_id"),
+                    client_secret=config.get("client_secret"),
+                    refresh_token=config.get("refresh_token"),
                     retry_policy=RetryPolicy(),
                 )
                 results.append({"tenant_id": tenant_id, "slug": source, "ok": True, **result})
@@ -290,6 +295,9 @@ def main() -> None:
         logger.info("Scheduler tick complete: %d connector(s) synced", len(results))
         return
 
+    # Docker runs this as PID 1, where SIGTERM is ignored unless a handler is
+    # installed -- without one, `docker stop` waits 10s and then SIGKILLs it.
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
     run_scheduler_loop()
 
 

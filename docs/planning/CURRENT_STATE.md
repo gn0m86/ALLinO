@@ -1,6 +1,6 @@
 # ALLinO Current State
 
-Updated: 2026-06-25
+Updated: 2026-07-17
 Purpose: one-file handoff for future sessions and AI agents.
 
 ## 1) What is implemented now
@@ -2147,21 +2147,225 @@ Telegram explicitly deferred:
   storage — a new connector architecture, not a token field) and explicitly
   chose to stay on Bot API rather than start it now.
 
+2026-07-16 — Sprint 32 opened and closed: Generic HTTP Connector nested-array
+extraction + Meta webhook verify handshake (unblocks WhatsApp Business/Viber
+without a dedicated connector):
+
+- User asked to check status and continue. The only in-flight item (Google
+  Calendar OAuth refresh-token support, `dev` commit `1ea0cc5`, still
+  unpromoted) is blocked on the user obtaining real Google Cloud Console
+  credentials. Every other previously-known gap had already been explicitly
+  deferred in past sessions. Asked via `AskUserQuestion` whether to wait or
+  pick something else; user said to choose ("Сам выбери и делай").
+- **Re-checked a load-bearing prior assumption before picking, using a
+  research subagent to read the actual code**: earlier sessions framed
+  WhatsApp/Viber as needing "a genuinely new connector architecture" because
+  they're webhook-push APIs. That's half-wrong — the Webhook Receiver
+  (`POST /webhooks/{connector_id}`, HMAC-verified) already exists (Sprint 10).
+  The real blocker was that `extract_items_from_payload()`/`extract_path()`
+  in `backend/app/connectors/generic_http_connector.py` couldn't reach
+  WhatsApp's doubly-nested `entry[].changes[].value.messages[]` shape (only
+  top-level arrays / flat `items`/`data`/`results` keys, no array indexing at
+  all — a comment already flagged this as "MVP"). Viber's flat single-event
+  payload was already ingestable as-is; its only real gap was
+  `_parse_timestamp` assuming epoch seconds when Viber sends milliseconds.
+- Fixed by generalizing the existing engine rather than writing dedicated
+  WhatsApp/Viber connector code — smaller, safer, and matches CLAUDE.md §5's
+  original intent ("adding a new source = registering a connector entry, not
+  writing Python code") for any future deeply-nested webhook source too:
+  - `extract_path()`: numeric segments now index into lists.
+  - `extract_items_from_payload()`: new optional `items_path` argument
+    (`[]`-suffixed dot-path segments iterate+flatten a list level).
+  - `_parse_timestamp()`: detects and converts millisecond epoch values;
+    wraps `fromtimestamp` in try/except (arbitrary external numeric
+    timestamps no longer able to raise an unhandled 500).
+  - `GenericConnectorFieldMapping` gained `items_path` — rides inside the
+    existing `field_mapping` JSON blob column, **no DB migration needed**.
+  - New `GET /webhooks/{connector_id}` handshake endpoint in
+    `api/generic_connectors.py`: echoes `hub.challenge` when
+    `hub.mode=subscribe` and `hub.verify_token` matches
+    `ALLINO_GENERIC_{SLUG}_WEBHOOK_VERIFY_TOKEN` (env-or-Vault, never in DB,
+    same pattern as the existing webhook HMAC secret). Required by Meta
+    Graph API webhooks (WhatsApp Business Cloud API included) before they'll
+    deliver to a URL at all; opt-in per connector, 404s exactly as before if
+    unconfigured.
+  - Frontend: new "Items path" field in the Add/Edit Custom Connector form
+    (`GenericConnectorsPanel.tsx`, `lib/types.ts`) — configurable entirely
+    through Settings.
+  - `.env.example` documents both new env keys.
+- Does NOT register an actual WhatsApp/Viber connector (needs the user's own
+  Meta App / Viber bot credentials, which don't exist in this project) and
+  does NOT add dedicated `whatsapp_connector.py`/`viber_connector.py` modules
+  — only closes the "can the existing generic engine ingest one of these
+  payloads at all" gap. Postgres/RLS, local AI classifier, Telegram MTProto,
+  JWT role management remain untouched and still deferred.
+- Verified: backend `pytest -q` => 422 passed (up from 396 — 26 new tests:
+  array-index extraction, WhatsApp-shaped nested-array extraction, ms-epoch
+  timestamp parsing, full webhook end-to-end for both WhatsApp- and
+  Viber-shaped payloads, GET handshake happy/wrong-token/unconfigured paths).
+  `ruff check app tests --select F,E9` clean. Frontend `tsc --noEmit` clean,
+  `npm run build` succeeds. **Live browser verification**: reproduced the
+  known dev-mode-only Settings-navigation quirk again on first try in
+  `next dev` (see Sprint 9/31), confirmed as sandbox/HMR-specific (not an app
+  bug) by switching to a production build, where Settings and the new form
+  field worked correctly first try; created and deleted a real WhatsApp-
+  shaped connector through the live UI against the real running dev backend,
+  confirming the new field persists correctly end-to-end. Full narrative:
+  `docs/planning/SPRINT32_TASK_BOARD.md`.
+
+2026-07-17 — Reply-credentials bug + full non-destructive QA pass on the
+running prod stack, three small fixes:
+
+- **User-reported bug**: replying to a Rocket.Chat message from the live
+  Inbox always failed with `503 "Reply is not configured for source
+  'rocketchat'"`, even though the source synced fine (green in the
+  sidebar). Root cause: `send_reply` (`api/replies.py`) only ever checked
+  env/Vault (`get_secret_value`) for reply credentials, never the tenant's
+  own DB-stored `builtin_connector_secrets` row (Sprint 31 "Your Own
+  Credentials") — sync reads from both, reply only ever read env. Fixed by
+  adding a DB-secret fallback (`_resolve_reply_credentials`) and having
+  `send_rocketchat_reply` accept `user_id`/`base_url` as params instead of
+  reading them from env internally. Cherry-picked straight to `main`
+  (commit `bf4d6a5`) ahead of the still-unpromoted Sprint 32 / Calendar
+  OAuth `dev` commits, since those aren't ready to ship yet — first use of
+  the promote-cycle's cherry-pick path instead of a full `merge dev`.
+- User then asked for a full non-destructive security/QA pass against the
+  live prod instance ("тестировщик... подключился и сам протестировал").
+  Clarified scope first via `AskUserQuestion`: prod (not a spun-up dev
+  stand-in) but no destructive actions and no real messages sent to real
+  Rocket.Chat/Telegram contacts. Covered: security headers, CORS allow-list
+  behavior (incl. a disallowed-origin probe), auth enforcement on every
+  real route (via `openapi.json`, not the stale route list `python -c
+  "from app.main import app"` gives outside Docker), rate-limit wiring,
+  error-state rendering (Inbox/Settings degrade to a "Failed to load" +
+  Retry, no crash, when the backend is unreachable — confirmed via a
+  temporary `NEXT_PUBLIC_BACKEND_URL=host.docker.internal` frontend rebuild
+  for the browser sandbox, reverted immediately after), a11y basics in
+  `globals.css`, and `pip-audit`/`npm audit` (both clean).
+- Found two low-severity issues, fixed both after user confirmation:
+  1. `/docs`, `/redoc`, `/openapi.json` were publicly reachable with no
+     auth in every environment, including prod — free API recon (full
+     route/schema map, including admin action names) for anyone who can
+     reach the backend. Fixed: `main.py` now passes `docs_url=None` etc.
+     when `ALLINO_ENV == "production"` (`_docs_enabled_for_env` helper,
+     unit-tested directly rather than via app-reload gymnastics).
+  2. `resolve_tenant_id` (`core/tenant.py`) validated `tenant_id`'s
+     presence before any credential was checked, so a fully anonymous
+     caller who just omitted `tenant_id` got a `400` spelling out the
+     exact expected request shape, ahead of the real `401`. Not a bypass
+     (the per-endpoint permission dependency still gates everything, and
+     the same shape is public via `/openapi.json` in dev anyway) but wrong
+     order on principle. Fixed by calling `require_api_key` at the top of
+     `resolve_tenant_id` itself rather than reordering `Depends()` params
+     across the ~47 call sites — every specific permission function
+     already calls `require_api_key` first as its own first line, so this
+     doesn't duplicate the role/scope checks, just moves "is there a
+     credential at all" ahead of tenant-shape validation.
+- Verified: backend `pytest -q` => 428 passed (up from 423 — 5 new: 2 for
+  the reply-credentials DB fallback, 3 for docs-visibility, 2 for the
+  auth-before-tenant-validation ordering — note some tests were added
+  across the two `dev` sessions same day, see git log for the exact
+  split). `pip-audit`/`npm audit` both clean. No frontend changes this
+  session. Prod rebuilt and confirmed healthy after each promotion;
+  `docker compose ps` / `git status` both clean at session end.
+- Deliberately NOT done, flagged to the user instead of silently changed:
+  no live click-through with real Inbox data inside the browser-automation
+  sandbox — would need editing the hardcoded CORS origin in
+  `docker-compose.yml` for the sandbox's `host.docker.internal` origin,
+  judged as infra-change territory beyond "testing," not attempted.
+
+2026-10-17 — Full project health check (user: "проверь полностью проект,
+почини, доведи до рабочего состояния"), fixes in `dev`, not yet promoted:
+
+- State found: prod stack stopped since 2026-07-30 (all containers stopped
+  together 24s after a start — host/Docker shutdown, not an app crash);
+  `scheduler_worker`/`event_bus_worker`/`frontend` prod images still from
+  2026-07-04 (later promotes only rebuilt `backend`) — next promote must be a
+  full `docker compose up -d --build`. `dev` still holds the unpromoted
+  Calendar OAuth + Sprint 32 commits. No git remote, so `.github/workflows`
+  have never actually run — local checks are the only gate.
+- Dependencies: `pip-audit`/`npm audit` were no longer clean (PyJWT 2.13.0 —
+  14 advisories, cryptography 49.0.0, Next.js 16.2.9 critical incl. RCE/SSRF
+  advisories, plus postcss/sharp/nanoid/source-map-js). Bumped PyJWT 2.15.1,
+  cryptography 50.0.2, next 16.3.8 (postcss override 8.5.23); every changed
+  package pinned to a release ≥2 weeks old. Both audits clean again.
+- Fixed:
+  1. Telegram bot token leak: httpx's `HTTPStatusError` text embeds the request
+     URL, and the Bot API puts the token in the URL path — any 4xx/5xx would
+     have persisted the token into `connectors.last_error`, `connector_runs`
+     and the append-only audit log. `_raise_for_status_redacted` in
+     `telegram_connector.py` masks it (still an `HTTPStatusError`, retry
+     classification unchanged). Plaintext scan of the prod DB found no
+     occurrence; encrypted columns could not be checked (decrypting prod data
+     was not permitted).
+  2. Audit-log bloat: `process_connector_batch` wrote a `.event` audit row for
+     every re-fetched duplicate on every poll — prod had 441k
+     `connector.rocketchat.sync.event` rows, DB 237 MB, for 801 messages. Now
+     only inserted events get a per-event row; the `.batch` row keeps the
+     duplicate count. Existing rows stay (append-only trigger) — reclaiming
+     that space is a separate, destructive decision for the user.
+  3. API key compared with `==` (timing side channel) in 6 places in
+     `core/security.py` → one `_api_key_matches` helper using
+     `hmac.compare_digest`.
+  4. Sprint 32 webhook receiver only read `X-Webhook-Signature`; real Meta
+     (WhatsApp) sends `X-Hub-Signature-256`, Viber sends
+     `X-Viber-Content-Signature` (bare hex) — real deliveries would all have
+     401'd. Both accepted now (same per-connector secret); tests switched to
+     the real headers.
+  5. Workers ignored SIGTERM as PID 1 → `docker stop` waited 10s then
+     SIGKILLed mid-sync (prod exit codes 137). SIGTERM handler → exit 0 in
+     ~0.6s, verified with `docker stop`.
+  6. Frontend: nav items didn't close Search/Archived/Digest (list column stuck
+     on them in every mode); Security Center ignored timezone/12-24h prefs and
+     parsed SQLite's zone-less `created_at` as local time (3h off for UTC+3);
+     thread SecurityCard/ReplyComposer claimed "TLS 1.3" unconditionally
+     (default setup is plain http) — now derived from `NEXT_PUBLIC_BACKEND_URL`
+     (`describeBackendTransport`); 401 on first inbox load now says to enter
+     the key in Settings → Backend Access.
+  7. Infra: Redis published on `0.0.0.0:6379` with no password → bound to
+     `127.0.0.1`; frontend image `node:20` (EOL) → `node:22`; backend image
+     `python:3.11` → `3.13` (what tests/dev venv actually run); CI node matrix
+     22/24.
+- Verified: `pytest` 431 passed (3 new), ruff F/E9 clean, `tsc`/`next build`
+  clean, live browser pass on a throwaway DB with auth enforced (no console
+  errors), and a full isolated `docker compose -p allino-devcheck` build+run
+  (all services healthy, Python 3.13 / Node 22, `/docs` 404 in production,
+  401 without key) — torn down afterwards, prod volume untouched.
+
 ## 5) What to read first in a new session
 
 1. ../../CLAUDE.md
 2. ../../PROJECT_MASTER_BRIEF.md (sections 1.2, 1.3, 1.4)
 3. ./PREBUILD_SPEC_V1.md
 4. ./SPRINT_PLAN_W1_W2.md
-5. ./SPRINT31_TASK_BOARD.md (most recent closed board — Sprint 1-30 boards are historical)
+5. ./SPRINT32_TASK_BOARD.md (most recent closed board — Sprint 1-31 boards are historical)
 6. ./RELEASE_HARDENING_CHECKLIST_S6.md
 7. ./AGENT_START_TEMPLATE.md
 8. this file (CURRENT_STATE.md), especially the "Open items" note under section 4
 
 ## 6) Guardrails for next agents
 
-- **Read this bullet first — supersedes the Sprint 30 bullet immediately
-  below it**: Sprint 31 (2026-07-04) is the most recently closed board.
+- **Read this bullet first — supersedes the Sprint 31 bullet immediately
+  below it**: Sprint 32 (2026-07-16) is the most recently closed board. The
+  Generic HTTP Connector's field-extraction engine
+  (`backend/app/connectors/generic_http_connector.py`) now supports numeric
+  array-index path segments and an optional `items_path` (with `[]`-suffixed
+  flatten segments) for payloads whose items live deeper than a top-level
+  array — e.g. WhatsApp Business Cloud API's
+  `entry[].changes[].value.messages[]`. `_parse_timestamp` now also handles
+  millisecond epoch values (Viber). A new `GET /webhooks/{connector_id}`
+  answers the Meta Graph API webhook-subscription handshake
+  (`hub.challenge`/`hub.verify_token`), gated by an optional per-connector
+  `ALLINO_GENERIC_{SLUG}_WEBHOOK_VERIFY_TOKEN`. **Don't assume WhatsApp/Viber
+  still need a dedicated connector module** — the generic engine can now
+  ingest either shape via config alone (no DB migration, `items_path` rides
+  inside the existing `field_mapping` JSON blob); an actual WhatsApp/Viber
+  connector instance still needs to be registered by whoever has real Meta
+  App / Viber bot credentials, which nobody has done yet in this project.
+  See `docs/planning/SPRINT32_TASK_BOARD.md` for the full research finding
+  that motivated this (previous sessions' "needs a genuinely new
+  architecture" framing for these two sources was only half-right).
+- Sprint 31 (2026-07-04) is the previously-most-recent board.
   Built-in connector auto-sync is now genuinely multi-tenant: a
   `builtin_connector_secrets` DB table (Fernet-encrypted config blob, same
   as `messages.preview`) lets any tenant bring their own token for

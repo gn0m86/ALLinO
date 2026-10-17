@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react"
 
-import { sendReply } from "../lib/api"
+import { describeBackendTransport, sendReply } from "../lib/api"
 import { InboxMessage, REPLY_SUPPORTED_SOURCES } from "../lib/types"
-import { SendIcon, ShieldCheck } from "./Icons"
+import { AlertIcon, SendIcon, ShieldCheck } from "./Icons"
 
 type Props = {
 	item: InboxMessage
@@ -16,6 +16,7 @@ export function ReplyComposer({ item, sourceLabel }: Props) {
 	const [sending, setSending] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const [sent, setSent] = useState(false)
+	const transport = describeBackendTransport()
 
 	useEffect(() => {
 		setText("")
@@ -128,8 +129,8 @@ export function ReplyComposer({ item, sourceLabel }: Props) {
 							whiteSpace: "nowrap",
 						}}
 					>
-						<ShieldCheck size={11} />
-						{error ? error : sent ? "Reply sent" : "Encrypted in transit (TLS)"}
+						{transport.secure ? <ShieldCheck size={11} /> : <AlertIcon size={11} />}
+						{error ? error : sent ? "Reply sent" : transport.label}
 					</span>
 					<button
 						onClick={() => void handleSend()}

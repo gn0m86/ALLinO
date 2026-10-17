@@ -212,6 +212,9 @@ def sync_google_calendar_connector(
     tenant_id: str,
     calendar_id: str | None = None,
     token: str | None = None,
+    client_id: str | None = None,
+    client_secret: str | None = None,
+    refresh_token: str | None = None,
     retry_policy: RetryPolicy | None = None,
     seeded_events: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
@@ -221,6 +224,9 @@ def sync_google_calendar_connector(
         tenant_id=tenant_id,
         token=token,
         calendar_id=calendar_id,
+        client_id=client_id,
+        client_secret=client_secret,
+        refresh_token=refresh_token,
         retry_policy=retry_policy or RetryPolicy(),
         seeded_events=seeded_events or [],
     )
@@ -304,6 +310,9 @@ def sync_builtin_connector_secret(*, tenant_id: str, source_type: str) -> dict[s
             tenant_id=tenant_id,
             calendar_id=config.get("calendar_id"),
             token=config.get("token"),
+            client_id=config.get("client_id"),
+            client_secret=config.get("client_secret"),
+            refresh_token=config.get("refresh_token"),
         )
 
     connector_cls, extra_fields = BUILTIN_SOURCE_CONNECTOR_MAP[source_type]

@@ -399,6 +399,15 @@ export default function HomePage() {
 		setMode("settings")
 	}, [])
 
+	// Picking a nav item must also leave Archived/Search/Digest, which otherwise
+	// keep replacing the list column in every mode until "Back to Inbox" is clicked.
+	const handleModeChange = useCallback((next: Mode) => {
+		setShowArchived(false)
+		setSearchOpen(false)
+		setDigestOpen(false)
+		setMode(next)
+	}, [])
+
 	// When mode changes, reset manual filters and apply mode-based priority filter
 	useEffect(() => {
 		if (skipInitialModeReset.current) {
@@ -466,7 +475,7 @@ export default function HomePage() {
 		>
 			<Sidebar
 				activeMode={mode}
-				onModeChange={setMode}
+				onModeChange={handleModeChange}
 				connectorCapabilities={connectorCapabilities}
 				connectors={connectors}
 				connectorRuns={connectorRuns}
