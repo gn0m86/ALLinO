@@ -40,7 +40,9 @@ jobs:
         run: pip-audit -r backend/requirements.txt
 
       - name: Unit tests
-        run: pytest backend/tests -q --junitxml=backend-test-report-${{ matrix.python-version }}.xml
+        # Run from backend/ so the `app` package is importable (as in local runs).
+        working-directory: backend
+        run: pytest tests -q --junitxml=../backend-test-report-${{ matrix.python-version }}.xml
 
       - name: Build check (bytecode compile)
         run: python -m compileall backend/app
