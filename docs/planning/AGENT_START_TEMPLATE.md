@@ -13,7 +13,7 @@ Before starting, confirm:
 ## 1) Read Order (strict, 60 sec)
 
 1. ../../CLAUDE.md
-2. ../../PROJECT_MASTER_BRIEF.md (sections 1.2, 1.3, 1.4)
+2. ../project/PROJECT_MASTER_BRIEF.md (sections 1.2, 1.3, 1.4)
 3. ./CURRENT_STATE.md
 4. ./SPRINT1_TASK_BOARD.md
 5. ./SMOKE_RUNBOOK.md

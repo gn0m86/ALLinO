@@ -61,7 +61,7 @@ Frontend запускается как Next.js app shell и читает tenant-
 
 ## 6. Source of truth for planning
 
-- [PROJECT_MASTER_BRIEF.md](../../PROJECT_MASTER_BRIEF.md)
+- [PROJECT_MASTER_BRIEF.md](../project/PROJECT_MASTER_BRIEF.md)
 - [docs/planning/PREBUILD_SPEC_V1.md](PREBUILD_SPEC_V1.md)
 - [docs/planning/SPRINT_PLAN_W1_W2.md](SPRINT_PLAN_W1_W2.md)
 

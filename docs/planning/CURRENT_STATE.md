@@ -2335,7 +2335,7 @@ running prod stack, three small fixes:
 ## 5) What to read first in a new session
 
 1. ../../CLAUDE.md
-2. ../../PROJECT_MASTER_BRIEF.md (sections 1.2, 1.3, 1.4)
+2. ../project/PROJECT_MASTER_BRIEF.md (sections 1.2, 1.3, 1.4)
 3. ./PREBUILD_SPEC_V1.md
 4. ./SPRINT_PLAN_W1_W2.md
 5. ./SPRINT32_TASK_BOARD.md (most recent closed board — Sprint 1-31 boards are historical)

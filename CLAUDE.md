@@ -6,7 +6,7 @@ Purpose: single entrypoint for AI agents working in this repository.
 
 Read these files first, in order:
 
-1. PROJECT_MASTER_BRIEF.md
+1. docs/project/PROJECT_MASTER_BRIEF.md
 2. docs/planning/PREBUILD_SPEC_V1.md
 3. docs/planning/SPRINT_PLAN_W1_W2.md
 4. docs/planning/SPRINT1_TASK_BOARD.md
@@ -23,7 +23,7 @@ Canonical research/analysis sources:
 Rule:
 
 - Do not modify files in docs/agent-answers/incoming unless explicitly asked.
-- Normalize/decide in PROJECT_MASTER_BRIEF.md and docs/planning/\*.
+- Normalize/decide in docs/project/PROJECT_MASTER_BRIEF.md and docs/planning/\*.
 
 ## 2. Product Mode (v1)
 
@@ -132,6 +132,6 @@ High-fidelity design is in `docs/design_handoff_secure_inbox/`:
 ## 8. Startup Checklist for Any New Agent Session
 
 1. Read this file.
-2. Read PROJECT_MASTER_BRIEF.md section 1.2/1.3/1.4.
+2. Read docs/project/PROJECT_MASTER_BRIEF.md section 1.2/1.3/1.4.
 3. Open current sprint board and move one task to in-progress.
 4. Implement only what is needed for sprint exit criteria.

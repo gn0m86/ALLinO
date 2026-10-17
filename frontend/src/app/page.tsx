@@ -453,7 +453,7 @@ export default function HomePage() {
 		)
 	}, [items, selected])
 
-	// Onboarding is required-but-skippable (PROJECT_MASTER_BRIEF.md §A.5): shown once
+	// Onboarding is required-but-skippable (docs/project/PROJECT_MASTER_BRIEF.md §A.5): shown once
 	// capabilities have actually loaded (avoids a flash before the first fetch resolves),
 	// only while the inbox is genuinely empty and no built-in source is configured yet.
 	// A registered-but-not-yet-synced Generic HTTP Connector won't suppress this screen —
